@@ -1,0 +1,87 @@
+Mapping Definitions:
+Types:
+Normal 0
+Fighting 1
+Flying 2
+Poison 3
+Ground 4
+Rock 5
+Bug 6
+Ghost 7
+Steel 8
+Fire 9
+Water 10
+Grass 11
+Electric 12
+Psychic 13
+Ice 14
+Dragon 15 
+Dark 16
+Fairy  17
+Unknown 18
+Abilities:
+Overgrow 0
+Chorophyl 1
+Moves:
+Tackle 0 
+Seed Bomb 1
+Leech Seed 2
+Growl 3
+Stats:
+Speed 0
+Special Defense 1
+Special Attack 2
+Defense 3
+Attack 4
+HP 5
+Natures:
+Hardy 0
+Lonely 1
+Brave 2
+Adamant 3
+Naughty 4
+Docile 5
+Bold 6
+Relaxed 7
+Impish 8
+Lax 9
+Serious 10
+Timid 11
+Hasty 12
+Jolly 13
+Naive 14
+Bashful 15
+Modest 16
+Mild 17
+Quiet 18
+Rash 19
+Quirky 20
+Calm 21
+Gentle 22
+Sassy 23
+Careful 24
+Leveling Rates:
+Medium Fast 0
+Erratic 1
+Fast 2
+Medium Slow 3
+Slow 4
+Fluctuating 5
+Egg Groups:
+Monster 0
+Water1 1
+Bug 2
+Flying 3
+Field 4
+Fairy 5
+Grass 6
+Undiscovered 7
+Human-Like 8
+Water3 9
+Mineral 10
+Amorphous 11
+Water2 12
+Ditto 13
+Dragon 14
+GenderUnknown 15
+

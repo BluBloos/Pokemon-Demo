@@ -1,0 +1,21 @@
+The list of the final features in order for the demo to be complete, and done, and over with.
+- Finish the battle system!
+	- Able to switch pokemon.
+	- 
+	- Realize actual stats for pokemon based on level.
+	- Animation system
+		- Sending out the pokemon.
+		- Retrieving the pokemon.
+		- Introduction of trainers.
+		- Entering the battle.
+		- Using moves.
+- Cutscene System and Main menu!
+	- So there will be some sort of sick main menu, which will appear after the skippable cutcene.
+	- It will be traditional so it will be like, start game!
+- Add grass into the overworld so we can properly initiate battles.
+- Add support for a ton of pokemon.
+- Add support for a ton of moves. 
+- Add support for abilities.
+- Add support for all the tiles nescessary.
+- Animated tiles on the tilemap!
+- Build the party that the user will have in order to defeat arceus. 
