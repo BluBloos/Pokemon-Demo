@@ -88,6 +88,8 @@ AudioStream stream;
 Texture2D backbuffer = {};
 //-----------------
 
+#define FRAME_RATE 60
+
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
@@ -174,6 +176,7 @@ int main(void)
     {
         int width = screenWidth;
         int height = screenHeight;
+        // format is R low order, G middle order, B top order, A is the top most order
         int format = UNCOMPRESSED_R8G8B8A8;
         int mipmaps = 1;
         
@@ -209,7 +212,7 @@ int main(void)
     emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
 #else
     // Set our game to run at 60 frames-per-second
-    SetTargetFPS(30);
+    SetTargetFPS(FRAME_RATE);
     
     while (!WindowShouldClose())
     {
@@ -260,7 +263,7 @@ void UpdateDrawFrame(void)
     
     // Update input stuff
     {
-        gameUserInput.DeltaTime = 1.0f / 30.0f;
+        gameUserInput.DeltaTime = 1.0f / FRAME_RATE;
         
         // old input becomes current input
         {
@@ -332,7 +335,7 @@ void UpdateDrawFrame(void)
     } // done updating input
     
     // Run the game
-    GameUpdateRender(&gameMemory, &gameOffscreenBuffer, &gameUserInput);
+    GameUpdateRender(&gameMemory, &gameOffscreenBuffer, &gameUserInput, RGB);
     
     UpdateTexture(backbuffer, gameOffscreenBuffer.memory); 
     

@@ -40,6 +40,16 @@ typedef double real64;
 
 #define NULL 0
 
+// NOTE: that in reading the enumerations,
+// left -> right corresponds to low order -> high order
+typedef enum
+{
+    RGB, // RGBA
+    BGR // BGRA
+} ColorMode;
+
+ColorMode GLOBAL_COLOR_MODE;
+
 typedef struct 
 {
 	float X;
@@ -629,7 +639,7 @@ typedef struct
 	char *BaseFilePath;
 } game_user_input;
 
-#define GAME_UPDATE_RENDER(name) void name(game_memory *Memory, game_offscreen_buffer *buffer, game_user_input *Input)
+#define GAME_UPDATE_RENDER(name) void name(game_memory *Memory, game_offscreen_buffer *buffer, game_user_input *Input, ColorMode gameColorMode)
 typedef GAME_UPDATE_RENDER(game_update_render);
 
 #define GAME_GET_SOUND_SAMPLES(name) void name(game_memory *Memory, game_sound_output_buffer *SoundBuffer, game_user_input *Input,bool mono)

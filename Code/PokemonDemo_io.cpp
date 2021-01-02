@@ -57,13 +57,28 @@ internal loaded_bitmap DEBUGLoadBMP(debug_platform_read_entire_file *ReadEntireF
         
 		//below is code to adjust the fact that in the bitmap the colors are reprresented like 
 		//0xRRGGBBAA where we interperet colors as 0xAARRGGBB. It's trivial stuff.
+        
+        // TODO: In addition, proper handling of color mode is done here as well.
 		unsigned int *SourceDest = Bitmap.PixelPointer;
 		for (int y = 0; y < Header->Height; ++y)
 		{
 			for (int x = 0; x < Header->Width; ++x)
 			{
-				*SourceDest++ = ( (*SourceDest >> 8) | (*SourceDest << 24) );
-			}
+				if (GLOBAL_COLOR_MODE == BGR)
+                {
+                    *SourceDest++ = ( (*SourceDest >> 8) | (*SourceDest << 24) );
+                } else if (GLOBAL_COLOR_MODE == RGB)
+                {
+                    unsigned int pixel_val = *SourceDest;
+                    
+                    unsigned int R = (pixel_val >> 24) & 0x000000FF;
+                    unsigned int G = (pixel_val >> 16) & 0x000000FF;
+                    unsigned int B = (pixel_val >> 8) & 0x000000FF;
+                    unsigned int A = pixel_val & 0x000000FF;
+                    
+                    *SourceDest++ = (A << 24) | (B << 16) | (G << 8) | (R);
+                }
+            }
 		}
 	}
 	return Bitmap;

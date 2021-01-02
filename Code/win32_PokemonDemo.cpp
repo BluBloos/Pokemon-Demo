@@ -1121,7 +1121,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 				
 				if (GameCode.UpdateRender)
 				{
-					GameCode.UpdateRender(&GameMemory, &GameBuffer, NewInput);//NOTE(Noah): Here is where our game will render
+					GameCode.UpdateRender(&GameMemory, &GameBuffer, NewInput, BGR);//NOTE(Noah): Here is where our game will render
 				}
 				
 				DWORD WriteCursor;

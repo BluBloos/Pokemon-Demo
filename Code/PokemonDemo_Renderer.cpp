@@ -1,20 +1,40 @@
+unsigned int ColorFromFloat(float R, float G, float B)
+{
+    unsigned int Color;
+    
+    if (GLOBAL_COLOR_MODE == RGB)
+    {
+        Color = (255 << 24) | (FloatToInt(B * 255.0f) << 16) 
+            | (FloatToInt(G * 255.0f) << 8) 
+            | FloatToInt(R * 255.0f);
+    } else if(GLOBAL_COLOR_MODE == BGR)
+    {
+        Color = (255 << 24) | (FloatToInt(R * 255.0f) << 16) 
+            | (FloatToInt(G * 255.0f) << 8) 
+            | FloatToInt(B * 255.0f);
+    }
+    
+    return Color;
+}
+
+/*
 internal void RenderGradient(game_offscreen_buffer *buffer, int xOffset, int yOffset)
 {
-	//TODO(Noah): Determine if passing buffer is more efficient as actual value
-	unsigned char *Row = (unsigned char *)buffer->memory;
-	for (int y = 0; y < buffer->height;++y)
-	{
-		unsigned int *Pixel = (unsigned int *)Row;
-		for (int x = 0; x < buffer->width;++x)
-		{
-			unsigned char r = 0;
-			unsigned char g = (unsigned char)(x+xOffset);
-			unsigned char b = (unsigned char)(y+yOffset); 
-			*Pixel++ = (r << 16) | (g << 16) | b;
-		}
-		Row += buffer->pitch;
-	}
-}
+ //TODO(Noah): Determine if passing buffer is more efficient as actual value
+ unsigned char *Row = (unsigned char *)buffer->memory;
+ for (int y = 0; y < buffer->height;++y)
+ {
+  unsigned int *Pixel = (unsigned int *)Row;
+  for (int x = 0; x < buffer->width;++x)
+  {
+   unsigned char r = 0;
+   unsigned char g = (unsigned char)(x+xOffset);
+   unsigned char b = (unsigned char)(y+yOffset); 
+   *Pixel++ = (r << 16) | (g << 16) | b;
+  }
+  Row += buffer->pitch;
+ }
+}*/
 
 internal void DrawRect(game_offscreen_buffer *buffer, float RealMinX, float RealMaxX,
                        float RealMinY, float RealMaxY, float R, float G, float B)
@@ -44,9 +64,7 @@ internal void DrawRect(game_offscreen_buffer *buffer, float RealMinX, float Real
 		MaxY = buffer->height;
 	}
     
-	unsigned int Color = (FloatToInt(R * 255.0f) << 16) 
-        | (FloatToInt(G * 255.0f) << 8) 
-        | FloatToInt(B * 255.0f);
+	unsigned int Color = ColorFromFloat(R, G, B); 
     
 	unsigned char *Row = ((unsigned char *)buffer->memory) 
         + MinX*buffer->BytesPerPixel 
@@ -63,66 +81,66 @@ internal void DrawRect(game_offscreen_buffer *buffer, float RealMinX, float Real
 	}
 }
 
+
 internal void DrawRectWithOpacity(game_offscreen_buffer *buffer, float RealMinX, float RealMaxX,
                                   float RealMinY, float RealMaxY, float R, float G, float B, float Alpha)
 {
-	int MinX = FloatToInt(RealMinX);
-	int MaxX = FloatToInt(RealMaxX);
-	int MinY = FloatToInt(RealMinY);
-	int MaxY = FloatToInt(RealMaxY);
+    int MinX = FloatToInt(RealMinX);
+    int MaxX = FloatToInt(RealMaxX);
+    int MinY = FloatToInt(RealMinY);
+    int MaxY = FloatToInt(RealMaxY);
     
-	if(MinX < 0)
-	{
-		MinX = 0;
-	}
+    if(MinX < 0)
+    {
+        MinX = 0;
+    }
     
-	if(MinY < 0)
-	{
-		MinY = 0;
-	}
+    if(MinY < 0)
+    {
+        MinY = 0;
+    }
     
-	if(MaxX > buffer->width)
-	{
-		MaxX = buffer->width;
-	}
+    if(MaxX > buffer->width)
+    {
+        MaxX = buffer->width;
+    }
     
-	if(MaxY > buffer->height)
-	{
-		MaxY = buffer->height;
-	}
+    if(MaxY > buffer->height)
+    {
+        MaxY = buffer->height;
+    }
     
-	unsigned int Color = (FloatToInt(R * 255.0f) << 16) 
-        | (FloatToInt(G * 255.0f) << 8) 
-        | FloatToInt(B * 255.0f);
+    //unsigned int Color = ColorFromFloat(mode, R, G, B);
     
-	unsigned char *Row = ((unsigned char *)buffer->memory) 
+    unsigned char *Row = ((unsigned char *)buffer->memory) 
         + MinX*buffer->BytesPerPixel 
         + MinY*buffer->pitch;
     
-	for (int Y = MinY; Y < MaxY;++Y)
-	{	
-		unsigned int *Pixel = (unsigned int *)Row;
-		for (int X = MinX; X < MaxX; ++X)
-		{
-			float DestR = (float)( (*Pixel >> 16) & 0xFF );
-			float DestG = (float)( (*Pixel >> 8) & 0xFF );
-			float DestB = (float)( (*Pixel >> 0) & 0xFF );
+    for (int Y = MinY; Y < MaxY;++Y)
+    {	
+        unsigned int *Pixel = (unsigned int *)Row;
+        for (int X = MinX; X < MaxX; ++X)
+        {
             
-			float AlphaValue = Alpha / 255.0f;
-			float SourceR = R * 255.0f;
-			float SourceG = G * 255.0f;
-			float SourceB = B * 255.0f;
+            float DestR = (float)( (*Pixel >> 16) & 0xFF );
+            float DestG = (float)( (*Pixel >> 8) & 0xFF );
+            float DestB = (float)( (*Pixel >> 0) & 0xFF );
             
-			float BlendedR = (1.0f - AlphaValue) * DestR + SourceR * AlphaValue;
-			float BlendedG = (1.0f - AlphaValue) * DestG + SourceG * AlphaValue;
-			float BlendedB = (1.0f - AlphaValue) * DestB + SourceB * AlphaValue;
+            float AlphaValue = Alpha / 255.0f;
+            float SourceR = R * 255.0f;
+            float SourceG = G * 255.0f;
+            float SourceB = B * 255.0f;
             
-			*Pixel++ = (((unsigned int)(BlendedR + 0.5f)) << 16) |
-				(((unsigned int)(BlendedG + 0.5f)) << 8) |
-				(((unsigned int)(BlendedB + 0.5f)) << 0);
-		}
-		Row += buffer->pitch;
-	}
+            float BlendedR = (1.0f - AlphaValue) * DestR + SourceR * AlphaValue;
+            float BlendedG = (1.0f - AlphaValue) * DestG + SourceG * AlphaValue;
+            float BlendedB = (1.0f - AlphaValue) * DestB + SourceB * AlphaValue;
+            
+            *Pixel++ =(255 << 24) | (((unsigned int)(BlendedR + 0.5f)) << 16) |
+                (((unsigned int)(BlendedG + 0.5f)) << 8) |
+                (((unsigned int)(BlendedB + 0.5f)) << 0);
+        }
+        Row += buffer->pitch;
+    }
 }
 
 internal void DrawBitmap(game_offscreen_buffer *buffer, loaded_bitmap Bitmap, float RealMinX, float RealMaxX,
@@ -198,7 +216,7 @@ internal void DrawBitmap(game_offscreen_buffer *buffer, loaded_bitmap Bitmap, fl
 				(((unsigned int)(BlendedG + 0.5f)) << 8) |
 				(((unsigned int)(BlendedB + 0.5f)) << 0);
 #else
-			if ( (*SourcePixel >> 24) & 1 )
+			if ( (*SourcePixel >> 24) & 1)
 			{
 				*Pixel = *SourcePixel;
 			}
@@ -280,7 +298,7 @@ internal void DrawBitmapWithOpacity(game_offscreen_buffer *buffer, loaded_bitmap
 			float BlendedG = (1.0f - AlphaValue) * DestG + SourceG * AlphaValue;
 			float BlendedB = (1.0f - AlphaValue) * DestB + SourceB * AlphaValue;
             
-			*Pixel = (((unsigned int)(BlendedR + 0.5f)) << 16) |
+			*Pixel = (255 << 24) |(((unsigned int)(BlendedR + 0.5f)) << 16) |
 				(((unsigned int)(BlendedG + 0.5f)) << 8) |
 				(((unsigned int)(BlendedB + 0.5f)) << 0);
 #else

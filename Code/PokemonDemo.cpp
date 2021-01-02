@@ -253,8 +253,12 @@ GAME_UPDATE_RENDER(GameUpdateRender)
     {	
         if (!Memory->IsInitialized)
         {
-            SeedRandom(GameState); //initialize the random generator
-            GameState->GameState = OPENING; //set the game state
+            // set the global color mode
+            GLOBAL_COLOR_MODE = gameColorMode;
+            //initialize the random generator
+            SeedRandom(GameState); 
+            //set the game state
+            GameState->GameState = OPENING; 
             
             //load in the pokemon database.
             loaded_asset Asset = LoadAsset(Memory->DEBUGPlatformReadEntireFile, Input->BaseFilePath, "Data//PokemonDatabase.dat");
@@ -525,7 +529,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 }break;
                 case MAINMENU:
                 {
-                    //draw blue backdrop
+                    // draw blue backdrop
                     DrawRect(buffer, 0.0f, (float)buffer->width, 0.0f, (float)buffer->height, 0.388f, 0.816f, 0.949f);
                     GameState->UserInterfaces[1].Active = true;
                     
