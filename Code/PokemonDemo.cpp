@@ -1644,8 +1644,11 @@ GAME_GET_SOUND_SAMPLES(GameGetSoundSamples)
                 Value = MIN_SIGNED_SHORT;
             }
             
+            // 2 channel audio buffer, write same audio to both channels!
+            
             *SampleOut++ = (short)Value;
-            *SampleOut++ = (short)Value;
+            if (!mono)
+                *SampleOut++ = (short)Value;
         }
     }
 }

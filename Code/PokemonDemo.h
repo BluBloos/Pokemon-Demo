@@ -632,7 +632,7 @@ typedef struct
 #define GAME_UPDATE_RENDER(name) void name(game_memory *Memory, game_offscreen_buffer *buffer, game_user_input *Input)
 typedef GAME_UPDATE_RENDER(game_update_render);
 
-#define GAME_GET_SOUND_SAMPLES(name) void name(game_memory *Memory, game_sound_output_buffer *SoundBuffer, game_user_input *Input)
+#define GAME_GET_SOUND_SAMPLES(name) void name(game_memory *Memory, game_sound_output_buffer *SoundBuffer, game_user_input *Input,bool mono)
 typedef GAME_GET_SOUND_SAMPLES(game_get_sound_samples);
 
 internal void PopSound(game_state *GameState, unsigned int QueueIndex)

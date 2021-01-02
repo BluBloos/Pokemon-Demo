@@ -898,8 +898,8 @@ int CALLBACK WinMain(HINSTANCE Instance,
             //TODO(Noah): Test if we can reduce the safety bytes. Be a little sly maybe.
 			SoundOutput.SafetyBytes = (int)(SoundOutput.SamplesPerSecond * SoundOutput.BytesPerSample / GameUpdateHz / 3);
 			
-            //TODO(Noah): So later we want to get rid of all these virutal allocs and 
-			//allocate all our memory at once.
+            // TODO(Noah): So later we want to get rid of all these virutal allocs and 
+			// allocate all our memory at once.
 			short *GameSoundSamples = (short *)VirtualAlloc(0,SoundOutput.BufferSize,MEM_COMMIT,PAGE_READWRITE);
 			
             //NOTE(Noah): Here we allocate all the memory we will ever use for our game, yay!
@@ -1180,7 +1180,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 					GameSoundBuffer.SampleOut = GameSoundSamples; 
 					if(GameCode.GetSoundSamples)
 					{
-						GameCode.GetSoundSamples(&GameMemory,&GameSoundBuffer, NewInput);
+						GameCode.GetSoundSamples(&GameMemory,&GameSoundBuffer, NewInput, false);
 					}
 					Win32FillSoundBuffer(&SoundOutput, &GameSoundBuffer, ByteToLock, BytesToWrite);
 					

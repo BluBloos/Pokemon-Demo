@@ -71,6 +71,23 @@ game_user_input gameUserInput = {};
 game_user_input PREV_gameUserInput = {};
 game_sound_output_buffer gameSoundOutputBuffer = {};
 
+//-------------------- audio things
+// buffer to play audio from
+short *GameSoundSamples;
+// pointer to current pos in buffer
+int readCursor = 0;
+// audio stream (raylib managed)
+AudioStream stream;
+
+// Set the size of each buffer in the double buffer to be 1920 samples. This gives us 40ms delay (w/ 48kHz) between the write cursor and the play cursor.
+// At 30 FPS, 33ms / frame, this should be feasible with no audio breaks.
+#define SOUND_BUFFER_SAMPLES 1920
+//-------------------------
+
+//------------------
+Texture2D backbuffer = {};
+//-----------------
+
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
@@ -118,9 +135,23 @@ int main(void)
     
     InitWindow(screenWidth, screenHeight, "Pokemon Demo");
     
-    /* Next Steps: Put data in a data file.
-    
-    */
+    // Initialize audio things
+    {
+        InitAudioDevice();       
+        
+        SetMasterVolume(1.0f); 
+        
+        SetAudioStreamBufferSizeDefault(SOUND_BUFFER_SAMPLES);  
+        
+        // 48 khz, 16bit sample size, channels: 2
+        stream = InitAudioStream(48000, 16, 1);
+        
+        gameSoundOutputBuffer.SamplesPerSecond = 48000;
+        GameSoundSamples = MemAlloc(SOUND_BUFFER_SAMPLES * sizeof(short));
+        
+        // Start processing stream buffer (no data loaded currently)
+        PlayAudioStream(stream);        
+    }
     
     // Initialize the gameMemory structure
     {
@@ -139,16 +170,25 @@ int main(void)
         gameMemory.ToggleFullscreen = ToggleFullscreenCallback;
     }
     
-    // Initialize the gameOffscreenBuffer structure
+    // Initialize the gameOffscreenBuffer structure and the backbuffer through raylib opengl layer
     {
-        // NOTE: Make damn sure the image matches the gameOffscreenBuffer!
-        //backbuffer = LoadTexture("texture");
+        int width = screenWidth;
+        int height = screenHeight;
+        int format = UNCOMPRESSED_R8G8B8A8;
+        int mipmaps = 1;
         
-        gameOffscreenBuffer.width = screenWidth;
-        gameOffscreenBuffer.height = screenHeight;
-        gameOffscreenBuffer.BytesPerPixel = 4;
-        gameOffscreenBuffer.pitch = screenWidth * gameOffscreenBuffer.BytesPerPixel;
-        gameOffscreenBuffer.memory = MemAlloc(screenWidth * screenHeight * gameOffscreenBuffer.BytesPerPixel);
+        // NOTE: Make damn sure the image matches the gameOffscreenBuffer!
+        gameOffscreenBuffer.width = width;
+        gameOffscreenBuffer.height = height;
+        gameOffscreenBuffer.BytesPerPixel = sizeof(unsigned int);
+        gameOffscreenBuffer.pitch = width * gameOffscreenBuffer.BytesPerPixel;
+        gameOffscreenBuffer.memory = MemAlloc(width * height * gameOffscreenBuffer.BytesPerPixel);
+        
+        backbuffer.id = rlLoadTexture(gameOffscreenBuffer.memory, width, height, format, mipmaps);
+        backbuffer.width = screenWidth;
+        backbuffer.height = screenHeight;
+        backbuffer.format = format;
+        backbuffer.mipmaps = mipmaps;
     }
     
     // Initialize the game user input
@@ -158,21 +198,24 @@ int main(void)
         // pokemondemo.cpp opens things like
         //  "Data\\..." 
         
-        gameUserInput.BaseFilePath = ""; 
+#ifdef PLATFORM_DESKTOP
+        gameUserInput.BaseFilePath = "C:\\dev\\pokemondemo\\Data\\";
+#elif PLATFORM_WEB
+        gameUserInput.BaseFilePath = "";
+#endif
     }
     
 #ifdef PLATFORM_WEB
     emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
 #else
     // Set our game to run at 60 frames-per-second
-    SetTargetFPS(60);
+    SetTargetFPS(30);
     
     while (!WindowShouldClose())
     {
         UpdateDrawFrame();
     }
 #endif
-    
     
     //--------------------------------------------------------------------------------------
     
@@ -185,7 +228,16 @@ int main(void)
             MemFree(gameMemory.Storage);
         if (gameMemory.TransientStorage)
             MemFree(gameMemory.TransientStorage);
+        if (GameSoundSamples)
+            MemFree(GameSoundSamples);
     }
+    
+    // Unload the backbuffer
+    UnloadTexture(backbuffer);
+    // Close raw audio stream and delete buffers from RAM
+    CloseAudioStream(stream);   
+    // Close audio device (music streaming is automatically stopped)
+    CloseAudioDevice();         
     
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
@@ -250,15 +302,6 @@ void UpdateDrawFrame(void)
                 RaylibProcessInput(&PREV_gameUserInput.GamepadInput[1].DebugButtons[1],&gameUserInput.GamepadInput[1].DebugButtons[1],IsKeyDown(KEY_Z));
             }
             
-            /* some debug stuff
-            {
-                bool z_down = IsKeyDown(KEY_Z);
-                if (z_down)
-                    printf("Z Down\n");
-                else
-                    printf("Z not down\n");
-            }*/
-            
             // Process the controller
             if (IsGamepadAvailable(GAMEPAD_PLAYER1))
             {
@@ -286,30 +329,41 @@ void UpdateDrawFrame(void)
                 }
             }
         }
-    }
+    } // done updating input
     
     // Run the game
     GameUpdateRender(&gameMemory, &gameOffscreenBuffer, &gameUserInput);
     
-    //UpdateTexture(backbuffer, gameOffscreenBuffer.memory); 
+    UpdateTexture(backbuffer, gameOffscreenBuffer.memory); 
     
-    
-    // get the audio
-    //GameGetSoundSamples(game_memory *Memory, game_sound_output_buffer *SoundBuffer, game_user_input *Input);
-    
-    // play the audio
+    // audio stuffs
+    {
+        // Refill audio stream if required
+        if (IsAudioStreamProcessed(stream))
+        {
+            gameSoundOutputBuffer.SampleAmount = SOUND_BUFFER_SAMPLES;
+            gameSoundOutputBuffer.SampleOut = GameSoundSamples;
+            
+            // get the audio
+            // NOTE: The game expects one contiguous chunk of mem to write to. It doesn't know that there is a loop buff in the background.
+            GameGetSoundSamples(&gameMemory, &gameSoundOutputBuffer, &gameUserInput, 
+                                true);
+            
+            // Copy finished frame to audio stream
+            UpdateAudioStream(stream, GameSoundSamples, SOUND_BUFFER_SAMPLES);
+        }
+    }
     
     // Blit the screen to the raylib window
-    
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
     
     ClearBackground(BLACK);
     
-    // Pixel blit
-    
-    unsigned char *Pixel = (unsigned char *)gameOffscreenBuffer.memory;
+    // Pixel blit:
+    // NOTE: This is painstakingly slow
+    /*unsigned char *Pixel = (unsigned char *)gameOffscreenBuffer.memory;
     
     for (int y = 0; y < screenHeight; y++)
     {
@@ -323,10 +377,12 @@ void UpdateDrawFrame(void)
         }
         // go to the next row
         Pixel += gameOffscreenBuffer.pitch;
-    }
+    }*/
     
+    // tint of white (no tint)
+    DrawTexture(backbuffer, 0, 0, WHITE);
     
-    //DrawTexture(backbuffer, 0, 0, WHITE);
+    DrawFPS(10, 10);
     
     EndDrawing();
     //----------------------------------------------------------------------------------
