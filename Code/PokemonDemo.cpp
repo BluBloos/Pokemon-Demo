@@ -22,12 +22,29 @@ Optimization
 - The diff between smooth gameplay is so tight that plugging in my laptop charger makes it run smooth...
 - Shaders are super slow
 
-Bugs
+Bugs / Must do
 
-- I can walk through the bald man
-- Interacting with entities is still strange
- -      Doesn't function like you would think it should
- 
+ Player Movement system:
+- Player appears over player 2
+-      soln: alter when to render the NPC relative to the player based on the reative pos of the entity. (the y pos)
+
+- Need to test what's going on with player 2 movement!
+- The whole walkable thing is really fucking with the mans!
+
+Idea: Move player, walkable for all other npc false
+Then move player 2, walkable for all other npc false ()
+
+Then make sure to set player 1 and player 2 tiles walkable again for the next frame.
+-------------------------
+
+Raylib mods and the such:
+- Raylib gamepad support is iffy
+- Seems like chrome creates a virtual gamepad, raylib can read this. So gamepad support is fine on the web, ironically.
+- Gamepad support on windows is iffy w/ raylib however. My gamepad support for Pokemon Demo is better.
+
+- Recording feature not built into raylib layer
+--------------------------
+
 */
 
 #include "PokemonDemo.h"

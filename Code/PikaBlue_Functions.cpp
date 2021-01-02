@@ -276,7 +276,7 @@ internal entity *GetEntityAhead(tile_map *map, game_state *GameState, entity_npc
 	// so what we are going to do is determine the tile right in front of us
 	// then check if any entity out of all the entities collide with that tile
 	// if they do return that entity
-	entity *Result = NULL;
+	//entity *Result = NULL;
     
 	for (unsigned int x = 0; x < GameState->EntityCount; x++)
 	{
@@ -285,8 +285,40 @@ internal entity *GetEntityAhead(tile_map *map, game_state *GameState, entity_npc
         // Make sure that the entity is not thyself.
         if (Entity.npc != Player)
         {
+            
+            tile_map_position playerPos = Player->Entity->TileMapPos;
+            tile_map_position entityPos = Entity.TileMapPos;
+            
+            //bool player_on_valid_tile = false;
+            
+            if (entityPos.AbsTileX == playerPos.AbsTileX)
+            {
+                if (entityPos.AbsTileY + 1 == playerPos.AbsTileY)
+                {
+                    if (Player->MoveDirection == DOWN)
+                        return &GameState->AllEntities[x];
+                }else if (entityPos.AbsTileY - 1 == playerPos.AbsTileY)
+                {
+                    if (Player->MoveDirection == UP)
+                        return &GameState->AllEntities[x];
+                }
+            }else if (entityPos.AbsTileY == playerPos.AbsTileY)
+            {
+                if (entityPos.AbsTileX + 1 == playerPos.AbsTileX)
+                {
+                    if (Player->MoveDirection == LEFT)
+                        return &GameState->AllEntities[x];
+                }else if (entityPos.AbsTileX - 1 == playerPos.AbsTileX)
+                {
+                    if (Player->MoveDirection == RIGHT)
+                        return &GameState->AllEntities[x];
+                }
+            }
+            
+            /*
             vector2f PlayerPos = {};
-            vector2f PlayerDirection = {};vector2f InteractablePos = {}; 
+            vector2f InteractablePos = {}; 
+            vector2f PlayerDirection = {};
             PlayerPos = TileMapPosToWorldSpace(map, Player->Entity->TileMapPos);  
             InteractablePos = TileMapPosToWorldSpace(map, Entity.TileMapPos);
             
@@ -296,7 +328,7 @@ internal entity *GetEntityAhead(tile_map *map, game_state *GameState, entity_npc
             
             // break the player's current direction into
             // the normal vector direction
-            if (Player->MoveDirection == UP)
+            if ()
             {
                 PlayerDirection.X = 0.0f; PlayerDirection.Y = 1.0f; 
             }
@@ -318,11 +350,11 @@ internal entity *GetEntityAhead(tile_map *map, game_state *GameState, entity_npc
             {
                 Result = &GameState->AllEntities[x];
                 break;
-            }
+            }*/
         }
-	}
-	
-	return Result; 
+    }
+    
+    return NULL; 
 } 
 
 // NOTE: This function literally makes an empty entity, with absolutely nothing.

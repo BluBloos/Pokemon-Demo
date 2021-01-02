@@ -308,31 +308,49 @@ void UpdateDrawFrame(void)
             }
             
             // Process the controller
+            /*
             if (IsGamepadAvailable(GAMEPAD_PLAYER1))
             {
                 game_user_gamepad_input *prevc = &PREV_gameUserInput.GamepadInput[0];
                 game_user_gamepad_input *c = &gameUserInput.GamepadInput[0];
                 
-                // A button
-                RaylibProcessInput(&prevc->DebugButtons[1],&c->DebugButtons[1],IsGamepadButtonDown(GAMEPAD_PLAYER1, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT));
+                // Any button
+                bool any_button = false;
                 
-                float axisRightX = GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_RIGHT_X);
-                
-                if (axisRightX > 0.1f) // deadzone
+                // NOTE: 17 is a nice number for max buttons
+                for (int i = 0; i < 17; i++)
                 {
-                    RaylibProcessInput(&prevc->Right, &c->Right, true);
-                    RaylibProcessInput(&prevc->Left, &c->Left, false);
+                    bool result = IsGamepadButtonDown(GAMEPAD_PLAYER1, 
+                                                      i);
+                    if (result)
+                        any_button = true;
                 }
-                else if (axisRightX < 0.1f)
+                
+                // NOTE: This works such that a half transition count of 1 means that ALL buttons were not pressed, then at least 1 button was pressed.
+                RaylibProcessInput(&prevc->DebugButtons[1],&c->DebugButtons[1], any_button);
+                
+                // the gamepad has at least 1 axis
+                if (GetGamepadAxisCount(GAMEPAD_PLAYER1))
                 {
-                    RaylibProcessInput(&prevc->Left, &c->Left, true);
-                    RaylibProcessInput(&prevc->Right, &c->Right, false);
-                } else
-                {
-                    RaylibProcessInput(&prevc->Right, &c->Right, false);
-                    RaylibProcessInput(&prevc->Left, &c->Left, false);
+                    float axisRightX = GetGamepadAxisMovement(GAMEPAD_PLAYER1, 0);
+                    
+                    if (axisRightX > 0.2f) // deadzone
+                    {
+                        RaylibProcessInput(&prevc->Right, &c->Right, true);
+                        RaylibProcessInput(&prevc->Left, &c->Left, false);
+                    }
+                    else if (axisRightX < 0.2f)
+                    {
+                        RaylibProcessInput(&prevc->Left, &c->Left, true);
+                        RaylibProcessInput(&prevc->Right, &c->Right, false);
+                    } else
+                    {
+                        RaylibProcessInput(&prevc->Right, &c->Right, false);
+                        RaylibProcessInput(&prevc->Left, &c->Left, false);
+                    }
                 }
             }
+            */
         }
     } // done updating input
     
@@ -388,6 +406,21 @@ void UpdateDrawFrame(void)
     DrawTexture(backbuffer, 0, 0, WHITE);
     
     DrawFPS(10, 10);
+    
+    if (IsGamepadAvailable(GAMEPAD_PLAYER1))
+    {
+        DrawText(TextFormat("GP1: %s", GetGamepadName(GAMEPAD_PLAYER1)), screenWidth - 300, 10, 10, BLACK);
+        
+        DrawText(TextFormat("DETECTED AXIS [%i]:", GetGamepadAxisCount(GAMEPAD_PLAYER1)), 10, 50, 10, MAROON);
+        
+        for (int i = 0; i < GetGamepadAxisCount(GAMEPAD_PLAYER1); i++)
+        {
+            DrawText(TextFormat("AXIS %i: %.02f", i, GetGamepadAxisMovement(GAMEPAD_PLAYER1, i)), 20, 70 + 20*i, 10, DARKGRAY);
+        }
+        
+        if (GetGamepadButtonPressed() != -1) DrawText(TextFormat("DETECTED BUTTON: %i", GetGamepadButtonPressed()), 10, 430, 10, RED);
+        else DrawText("DETECTED BUTTON: NONE", 10, 430, 10, GRAY);
+    }
     
     EndDrawing();
     //----------------------------------------------------------------------------------
