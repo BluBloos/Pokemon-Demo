@@ -480,6 +480,7 @@ typedef struct
 } pokemon_cry;
 
 #define LUT_AMOUNT 4
+
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 

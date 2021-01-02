@@ -62,8 +62,10 @@ for audio thinking AudioStream and Sound look good
 
 // Initialization
 //--------------------------------------------------------------------------------------
-const int screenWidth = 800;
-const int screenHeight = 450;
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
+const int screenWidth = SCREEN_WIDTH;
+const int screenHeight = SCREEN_HEIGHT;
 
 game_memory gameMemory = {};
 game_offscreen_buffer gameOffscreenBuffer = {};

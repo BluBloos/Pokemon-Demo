@@ -1,33 +1,32 @@
 /*
 
 TODO:
-Bugs to fix:
-- I can walk through the bald man
+
+Misc:
 - Make final tile map edit
-
-TODO: Here is my big list of TODO's!
-
-Small bugs...
-
-- Interacting with entities is still strange...
 - Add more text to the font
-- Word wrapping of text boxes sucks
-- Audio is spiky and gross sounding
-
-- Game lags from time to time
-
--       The diff between smooth gameplay is so tight that plugging in my laptop charger makes it run smooth...
-
+- Change words to account for bad text wrapping
 - Shaders could be better
-- When you die due to arceus the camera pans across the entire map
-
-More features...
 - Entity path planning and moving around, that would be dope
 - epic walk on events (entity on tile(s), invisible)
--        specifically, epic camera movement for arceus. Spear pillar background music!!!, camera fade
+-        specifically, epic camera movement for arceus.
 - better audio mixing
 - audio fades
+- Camera fade effect
+- Health Bar is blue tho... :(
 
+Optimization
+- Game lags from time to time
+- Was very slow on web (we'll see now that I optimized the video stuff)
+- The diff between smooth gameplay is so tight that plugging in my laptop charger makes it run smooth...
+- Shaders are super slow
+
+Bugs
+
+- I can walk through the bald man
+- Interacting with entities is still strange
+ -      Doesn't function like you would think it should
+ 
 */
 
 #include "PokemonDemo.h"
@@ -216,6 +215,7 @@ internal void BlackOut(void *Data, unsigned int Param)
 {
     game_state *GameState = (game_state *)Data;
     
+    // Heal all the pokemon in the party
     for (unsigned int x = 0; x < 6; x++)
     {
         pokemon *Pokemon = &GameState->PokemonP[x];
@@ -227,12 +227,21 @@ internal void BlackOut(void *Data, unsigned int Param)
         }
     }
     
+    
     PlaySoundEffect(GameState, GameState->SoundEffects[2], false, 1.0f);
     SetPauseState(GameState, 2.0f);
+    
+    // move player back to the origin
     GameState->Player->Entity->TileMapPos.AbsTileX = 0;
     GameState->Player->Entity->TileMapPos.AbsTileY = 0;
     GameState->Player->Entity->TileMapPos.X = 0.7f;
     GameState->Player->Entity->TileMapPos.Y = 0.7f;
+    GameState->Player->MoveDirection = UP;
+    
+    // Move the camera with the player
+    GameState->CameraPos.X = 0;
+    GameState->CameraPos.Y = 0;
+    
     GameState->GameState = ENTERINGAREA;
 }
 
@@ -333,7 +342,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 
                 npc->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 1, 4);
                 
-                CloneString("Hi! I'm player two. Connect a controller to move me around!", npc->Entity->Message, 256); 
+                CloneString("Hi! Connect a controller to move me around!", npc->Entity->Message, 256); 
                 
                 npc->Entity->TileMapPos.AbsTileX = 17; npc->Entity->TileMapPos.X = 0.7f;
                 npc->Entity->TileMapPos.AbsTileY = 5; npc->Entity->TileMapPos.Y = 0.7f;
@@ -967,6 +976,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 }break;
                 case OVERWORLD:
                 {
+                    // Overworld background
                     DrawRect(buffer, 0.0f, (float)buffer->width, 0.0f,(float)buffer->height, 0.2f, 0.2f, 0.2f);
                     
                     tile_map *TileMap = World->TileMap;
@@ -1078,6 +1088,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         
                         
                         // move the player acording to input 
+                        // NOTE: If there is a message blitting, the player cannot move. That's why this code is here.
                         if (Keyboard->Up.EndedDown)
                         {
                             dPlayerY += PlayerSpeed;
@@ -1159,8 +1170,9 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         GameState->Player->Walking = false;
                     }
                     
+                    // the second player animation timer reset - see above for player 1
                     {
-                        // the second player
+                        
                         entity_npc *PlayerTwo = GameState->AllEntities[0].npc;
                         
                         if( (dPlayer2X != 0.0f) | (dPlayer2Y != 0.0f) )
@@ -1180,7 +1192,6 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     //Initialize some specs about the player's bounding box
                     float PLayerHeight = TileMap->TileSizeInMeters;
                     float PlayerWidth = 0.75f * PLayerHeight;
-                    
                     tile_map NewTileMap = *TileMap;
                     
                     // below is the code to overwrite the walkablity of the tilemap based on the entities

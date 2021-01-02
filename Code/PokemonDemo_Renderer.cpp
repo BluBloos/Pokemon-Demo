@@ -717,8 +717,9 @@ internal void ExecuteShader(game_offscreen_buffer *dest, shader *Shader, float D
     }
     else
     {
-        //do the shader code here
+        // do the shader code here
         float Cutoff = Shader->ActiveTime / Shader->Length;
+        // screenshot of game tho
         unsigned int *Source = (unsigned int *)Shader->source->memory; 
         unsigned int *Dest = (unsigned int *)dest->memory;
         unsigned int *LUT = Shader->LUT.PixelPointer + Shader->LUT.Width * (Shader->LUT.Height - 1);
@@ -732,7 +733,7 @@ internal void ExecuteShader(game_offscreen_buffer *dest, shader *Shader, float D
             {
                 //for each pixel what do I do?
                 
-                *DestPixel = ( (*LUTPixel & 0x000000FF) / 255.0f > Cutoff)? *Pixel:0;
+                *DestPixel = ( (*LUTPixel & 0x000000FF) / 255.0f > Cutoff)? *Pixel : (255 << 24) | 0;
                 
                 LUTPixel++;
                 Pixel++;
@@ -771,7 +772,7 @@ internal void ExecuteShader2(game_offscreen_buffer *dest, shader *Shader, float 
             {
                 //for each pixel what do I do?
                 
-                *DestPixel = ( (*LUTPixel & 0x000000FF) / 255.0f > Cutoff)? *Pixel:*Pixel2;
+                *DestPixel = ( (*LUTPixel & 0x000000FF) / 255.0f > Cutoff)? *Pixel: *Pixel2;
                 
                 Pixel2++; LUTPixel++;
                 Pixel++; DestPixel++;
