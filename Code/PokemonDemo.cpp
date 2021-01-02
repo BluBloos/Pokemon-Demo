@@ -14,6 +14,7 @@ Misc:
 - audio fades
 - Camera fade effect
 - Health Bar is blue tho... :(
+- Overall bad depth features
 
 Optimization
 - Game lags from time to time
@@ -1195,7 +1196,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     tile_map NewTileMap = *TileMap;
                     
                     // below is the code to overwrite the walkablity of the tilemap based on the entities
-                    for (unsigned int x = 1; x < GameState->EntityCount; x++)
+                    for (unsigned int x = 0; x < GameState->EntityCount; x++)
                     {
                         entity Entity = GameState->AllEntities[x];
                         
