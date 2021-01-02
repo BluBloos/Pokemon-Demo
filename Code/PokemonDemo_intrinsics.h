@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-inline int FloatToInt(float Value)
+INLINE int FloatToInt(float Value)
 {
 	//TODO: Intrisnic
 	//apparently there is a lot more complexity than just this.
@@ -11,32 +11,32 @@ inline int FloatToInt(float Value)
 	return Result;
 }
 
-inline int SquareInt(int Value)
+INLINE int SquareInt(int Value)
 {
 	return (Value * Value);
 }
 
-inline float FloorFloat(float Value)
+INLINE float FloorFloat(float Value)
 {
 	return floorf(Value);
 }
 
-inline signed int FloorFloatToInt(float Value)
+INLINE signed int FloorFloatToInt(float Value)
 {
 	return ( (int) floorf(Value) );
 }
 
-inline float Sin(float Angle)
+INLINE float Sin(float Angle)
 {
 	return sinf(Angle);
 }
 
-inline float Pow(float base, float power)
+INLINE float Pow(float base, float power)
 {
 	return powf(base, power);
 }
 
-inline float Abs(float Value)
+INLINE float Abs(float Value)
 {
 	float Result = (Value < 0.0f)? Value * -1.0f:Value;
 	return Result;

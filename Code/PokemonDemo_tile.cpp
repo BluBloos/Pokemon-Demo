@@ -1,10 +1,10 @@
-inline loaded_bitmap GrabTileBitmap(loaded_bitmap *TileSet, unsigned int Index)
+INLINE loaded_bitmap GrabTileBitmap(loaded_bitmap *TileSet, unsigned int Index)
 {
 	Assert(Index != 0);
 	return TileSet[Index - 1];
 }
 
-inline unsigned int PackTile(unpacked_tile Tile)
+INLINE unsigned int PackTile(unpacked_tile Tile)
 {
 	unsigned int Result = 0;
 	Result = Result | Tile.TileType;
@@ -19,7 +19,7 @@ inline unsigned int PackTile(unpacked_tile Tile)
 	return Result;
 }
 
-inline unpacked_tile UnPackTile(unsigned int Tile)
+INLINE unpacked_tile UnPackTile(unsigned int Tile)
 {
 	unpacked_tile Result = {};
 	Result.TileType = Tile & 0x0000FFFF;
@@ -34,35 +34,35 @@ inline unpacked_tile UnPackTile(unsigned int Tile)
 	return Result;
 }
 
-inline void UnPackTransparentTile(unpacked_tile Tile, unsigned int *BackgroundIndex, unsigned int *ForegroundIndex)
+INLINE void UnPackTransparentTile(unpacked_tile Tile, unsigned int *BackgroundIndex, unsigned int *ForegroundIndex)
 {
 	*ForegroundIndex = Tile.TileType & 0x000000FF;
 	*BackgroundIndex = Tile.TileType >> 8;
 }
 
-inline unpacked_tile MakeTransparentTile(unpacked_tile Tile, unsigned int BackgroundIndex, unsigned int ForegroundIndex)
+INLINE unpacked_tile MakeTransparentTile(unpacked_tile Tile, unsigned int BackgroundIndex, unsigned int ForegroundIndex)
 {
 	Tile.Transparent = 1;
 	Tile.TileType = (BackgroundIndex << 8) | ForegroundIndex;
 	return Tile;
 }
 
-inline unpacked_tile GetTileMapValueUnchecked(tile_map *TileMap, tile_chunk *Chunk,
- unsigned int TileX, unsigned int TileY)
+INLINE unpacked_tile GetTileMapValueUnchecked(tile_map *TileMap, tile_chunk *Chunk,
+                                              unsigned int TileX, unsigned int TileY)
 {
 	unsigned int Result = Chunk->Tiles[TileY * TileMap->ChunkSize + TileX];
 	return UnPackTile(Result);
 }
 
-inline void SetTileMapValueUnchecked(tile_map *TileMap, tile_chunk *Chunk, 
-	unsigned int X, unsigned int Y, unpacked_tile Value)
+INLINE void SetTileMapValueUnchecked(tile_map *TileMap, tile_chunk *Chunk, 
+                                     unsigned int X, unsigned int Y, unpacked_tile Value)
 {
 	unsigned int PackedTile = PackTile(Value);
 	Chunk->Tiles[Y * TileMap->ChunkSize + X] = PackedTile; 
 }
 
-inline void SetTile(tile_map *TileMap, tile_chunk *Chunk,
- unsigned int TileX, unsigned int TileY, unpacked_tile Value)
+INLINE void SetTileNoArena(tile_map *TileMap, tile_chunk *Chunk,
+                           unsigned int TileX, unsigned int TileY, unpacked_tile Value)
 {
 	if(Chunk)
 	{
@@ -70,7 +70,7 @@ inline void SetTile(tile_map *TileMap, tile_chunk *Chunk,
 	}
 }
 
-inline tile_chunk *GetTileChunk(tile_map *TileMap, unsigned int X, unsigned int Y, unsigned int Z)
+INLINE tile_chunk *GetTileChunk(tile_map *TileMap, unsigned int X, unsigned int Y, unsigned int Z)
 {
 	tile_chunk *TileChunk = 0;
 	if ( (X < TileMap->WorldCountX) && (Y < TileMap->WorldCountY) && (Z < TileMap->WorldCountZ))
@@ -80,44 +80,44 @@ inline tile_chunk *GetTileChunk(tile_map *TileMap, unsigned int X, unsigned int 
 	return TileChunk;
 }
 
-inline unpacked_tile GetTileValue(tile_map *TileMap, tile_chunk *Chunk,
- unsigned int TileX, unsigned int TileY)
+INLINE unpacked_tile GetTileValueWithChunk(tile_map *TileMap, tile_chunk *Chunk,
+                                           unsigned int TileX, unsigned int TileY)
 {
 	unpacked_tile TileMapValue = {};
 	if (Chunk && Chunk->Tiles)
 	{
 		TileMapValue = GetTileMapValueUnchecked(TileMap, Chunk,
-		 TileX, TileY);
+                                                TileX, TileY);
 	}
-
+    
 	return TileMapValue;
 }
 
-inline void ReCalcCoord(tile_map *TileMap, unsigned int *Tile, float *offset)
+INLINE void ReCalcCoord(tile_map *TileMap, unsigned int *Tile, float *offset)
 {
 	signed int TileOffset = FloorFloatToInt( *offset / TileMap->TileSizeInMeters );
-
+    
 	*Tile += TileOffset;
-
+    
 	*offset -= TileOffset * TileMap->TileSizeInMeters;
 	/*
-	Assert(*offset >= 0);
-	Assert(*offset < World->TileSideInMeters);
-	*/
+ Assert(*offset >= 0);
+ Assert(*offset < World->TileSideInMeters);
+ */
 }
 
-inline tile_map_position ReCalcTileMapPosition(tile_map *TileMap,
- tile_map_position MapPos)
+INLINE tile_map_position ReCalcTileMapPosition(tile_map *TileMap,
+                                               tile_map_position MapPos)
 {
 	tile_map_position Result = MapPos;
-
+    
 	ReCalcCoord(TileMap, &Result.AbsTileX, &Result.X);
 	ReCalcCoord(TileMap, &Result.AbsTileY, &Result.Y);
 	
 	return Result;
 }
 
-inline tile_chunk_position GetChunkPos(tile_map *TileMap, int AbsTileX, int AbsTileY, int AbsTileZ)
+INLINE tile_chunk_position GetChunkPos(tile_map *TileMap, int AbsTileX, int AbsTileY, int AbsTileZ)
 {
 	tile_chunk_position Result;
 	Result.TileChunkX = AbsTileX >> TileMap->ChunkShift;
@@ -131,15 +131,15 @@ inline tile_chunk_position GetChunkPos(tile_map *TileMap, int AbsTileX, int AbsT
 internal unpacked_tile GetTileValue(tile_map *TileMap, unsigned int AbsTileX, unsigned int AbsTileY, unsigned int AbsTileZ)
 {
 	unpacked_tile Value = {};
-
+    
 	tile_chunk_position ChunkPos = GetChunkPos(TileMap, AbsTileX, AbsTileY, AbsTileZ);
 	tile_chunk *TileChunk = GetTileChunk(TileMap, ChunkPos.TileChunkX, ChunkPos.TileChunkY, ChunkPos.TileChunkZ);
-	Value = GetTileValue(TileMap, TileChunk, ChunkPos.TileX, ChunkPos.TileY);
-
+	Value = GetTileValueWithChunk(TileMap, TileChunk, ChunkPos.TileX, ChunkPos.TileY);
+    
 	return Value;
 }
 
-inline bool GetTileValueValid(unpacked_tile TileValue)
+INLINE bool GetTileValueValid(unpacked_tile TileValue)
 {
 	return (TileValue.Walkable == 1);
 }
@@ -183,7 +183,7 @@ internal bool QueryAdjacentTile(tile_map *TileMap, int TileX, int TileY, int Til
 }
 
 internal bool FloodTileWalkable(tile_map *TileMap, unsigned int TileX, unsigned int TileY,
-	unsigned int TileZ, float X, float Y, unsigned int MovDir, float PlayerRadius)
+                                unsigned int TileZ, float X, float Y, unsigned int MovDir, float PlayerRadius)
 {
 	bool Result = false;
 	unpacked_tile TileValue = GetTileValue(TileMap, TileX, TileY, TileZ);
@@ -345,12 +345,12 @@ internal tile_map_position QueryNewTileMapPos(tile_map *TileMap, tile_map_positi
 		bool TileRight = !GetTileValueValid( GetTileValue(TileMap, InitialPos.AbsTileX + 1, InitialPos.AbsTileY, InitialPos.AbsTileZ) );
 		bool TileUpperRight = !GetTileValueValid( GetTileValue(TileMap, InitialPos.AbsTileX + 1, InitialPos.AbsTileY + 1, InitialPos.AbsTileZ) );
 		bool TileUpperLeft = !GetTileValueValid( GetTileValue(TileMap, InitialPos.AbsTileX - 1, InitialPos.AbsTileY + 1, InitialPos.AbsTileZ) );
-
+        
 		float MaxY = (TileAbove)? TileMap->TileSizeInMeters - PlayerRadius * 2.0f: TileMap->TileSizeInMeters;
 		float MinY = 0.0f;
 		float MinX = (TileLeft)? PlayerRadius: 0.0f;
 		float MaxX = (TileRight)? TileMap->TileSizeInMeters - PlayerRadius: TileMap->TileSizeInMeters;
-
+        
 		if (!TileAbove)
 		{
 			if (TileUpperLeft && (TargetPos.Y > (TileMap->TileSizeInMeters - PlayerRadius * 2.0f)  ) )
@@ -362,7 +362,7 @@ internal tile_map_position QueryNewTileMapPos(tile_map *TileMap, tile_map_positi
 				MaxX = TileMap->TileSizeInMeters - PlayerRadius;
 			}
 		}
-
+        
 		if (TargetPos.X < MinX)
 		{
 			TargetPos.X = MinX;
@@ -371,7 +371,7 @@ internal tile_map_position QueryNewTileMapPos(tile_map *TileMap, tile_map_positi
 		{
 			TargetPos.X = MaxX;
 		}
-
+        
 		if (TargetPos.Y < MinY)
 		{
 			TargetPos.Y = MinY;
@@ -380,7 +380,7 @@ internal tile_map_position QueryNewTileMapPos(tile_map *TileMap, tile_map_positi
 		{
 			TargetPos.Y = MaxY;
 		}
-
+        
 		Result = TargetPos;
 	}
 	else
@@ -395,13 +395,13 @@ internal void SetTile(memory_arena *Arena, tile_map *TileMap, unsigned int AbsTi
 {
 	tile_chunk_position ChunkPos = GetChunkPos(TileMap, AbsTileX, AbsTileY, AbsTileZ);
 	tile_chunk *TileChunk = GetTileChunk(TileMap, ChunkPos.TileChunkX, ChunkPos.TileChunkY, ChunkPos.TileChunkZ);
-
+    
 	if (!TileChunk->Tiles)
 	{
 		TileChunk->Tiles = PushArray(Arena, SquareInt( TileMap->ChunkSize ), unsigned int );
 	}
-
-	SetTile(TileMap, TileChunk, ChunkPos.TileX, ChunkPos.TileY, Value);
+    
+	SetTileNoArena(TileMap, TileChunk, ChunkPos.TileX, ChunkPos.TileY, Value);
 }
 
 internal void SetChunk(tile_map *TileMap, unsigned int ChunkX, unsigned int ChunkY, unsigned int ChunkZ, unsigned int *Tiles)

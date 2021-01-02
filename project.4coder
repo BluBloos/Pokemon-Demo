@@ -1,0 +1,3 @@
+extensions = ".c.cpp.h";
+fkey_command_win[5] = {"run.bat", "*run*", true};
+fkey_command_win[11] = {"debug.bat", "*debug*", true};

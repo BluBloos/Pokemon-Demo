@@ -1,4 +1,4 @@
-inline wav_file_cursor ParseChunkAt(void *BytePointer, void *EndOfFile)
+INLINE wav_file_cursor ParseChunkAt(void *BytePointer, void *EndOfFile)
 {
 	wav_file_cursor Result;
 	Result.Cursor = (char *)BytePointer;
@@ -6,7 +6,7 @@ inline wav_file_cursor ParseChunkAt(void *BytePointer, void *EndOfFile)
 	return Result;
 }
 
-inline wav_file_cursor NextChunk(wav_file_cursor FileCursor)
+INLINE wav_file_cursor NextChunk(wav_file_cursor FileCursor)
 {
 	wav_chunk_header *WavChunkHeader = (wav_chunk_header *)FileCursor.Cursor;
 	int ChunkSize = WavChunkHeader->ChunkSize;
@@ -18,24 +18,24 @@ inline wav_file_cursor NextChunk(wav_file_cursor FileCursor)
 	return FileCursor;
 }
 
-inline bool IsFileCursorValid(wav_file_cursor FileCursor)
+INLINE bool IsFileCursorValid(wav_file_cursor FileCursor)
 {
 	return ( FileCursor.Cursor < FileCursor.EndOfFile );
 }
 
-inline void *GetChunkData(wav_file_cursor FileCursor)
+INLINE void *GetChunkData(wav_file_cursor FileCursor)
 {
 	void *Result = FileCursor.Cursor + sizeof(wav_chunk_header);
 	return Result;
 }
 
-inline int GetChunkSize(wav_file_cursor FileCursor)
+INLINE int GetChunkSize(wav_file_cursor FileCursor)
 {
 	wav_chunk_header *WavChunkHeader = (wav_chunk_header *)FileCursor.Cursor;
 	return WavChunkHeader->ChunkSize;	
 }
 
-inline int GetType(wav_file_cursor FileCursor)
+INLINE int GetType(wav_file_cursor FileCursor)
 {
 	wav_chunk_header *WavChunkHeader = (wav_chunk_header *)FileCursor.Cursor;
 	int Result = WavChunkHeader->ChunkID;
@@ -43,7 +43,7 @@ inline int GetType(wav_file_cursor FileCursor)
 }
 
 internal loaded_bitmap DEBUGLoadBMP(debug_platform_read_entire_file *ReadEntireFile,
-	char *FileName)
+                                    char *FileName)
 {
 	loaded_bitmap Bitmap = {};
 	Bitmap.Scale = MASTER_BITMAP_SCALE;
@@ -54,7 +54,7 @@ internal loaded_bitmap DEBUGLoadBMP(debug_platform_read_entire_file *ReadEntireF
 		Bitmap.PixelPointer = (unsigned int *) ( (unsigned char *)FileResult.Contents + Header->BitmapOffset );
 		Bitmap.Height = Header->Height;
 		Bitmap.Width = Header->Width;
-
+        
 		//below is code to adjust the fact that in the bitmap the colors are reprresented like 
 		//0xRRGGBBAA where we interperet colors as 0xAARRGGBB. It's trivial stuff.
 		unsigned int *SourceDest = Bitmap.PixelPointer;
@@ -70,7 +70,7 @@ internal loaded_bitmap DEBUGLoadBMP(debug_platform_read_entire_file *ReadEntireF
 }
 
 internal loaded_wav DEBUGLoadWav(debug_platform_read_entire_file *ReadEntireFile,
-	char *FileName)
+                                 char *FileName)
 {
 	loaded_wav WavFile = {};
 	debug_read_file_result FileResult = ReadEntireFile(FileName);
@@ -109,13 +109,13 @@ internal loaded_wav DEBUGLoadWav(debug_platform_read_entire_file *ReadEntireFile
 				break;
 				default:
 				{
-
+                    
 				}
 				break;
 			}
 		}
 		Assert( (Channels && Samples && SampleDataSize) );
-
+        
 		WavFile.SampleCount = SampleDataSize / ( Channels * sizeof(short) );
 		WavFile.Channels = Channels;
 		if(Channels == 1)
@@ -126,7 +126,7 @@ internal loaded_wav DEBUGLoadWav(debug_platform_read_entire_file *ReadEntireFile
 		{
 			WavFile.SampleData[0] = Samples;
 			WavFile.SampleData[1] = Samples + WavFile.SampleCount;
-
+            
 			//NOTE: Here I uninterleave the left channel. Very nice.
 			for (int SampleIndex = 0; SampleIndex < WavFile.SampleCount;++SampleIndex)
 			{
@@ -137,7 +137,7 @@ internal loaded_wav DEBUGLoadWav(debug_platform_read_entire_file *ReadEntireFile
 		{
 			Assert(!"Unsupported Channel type!");
 		}
-
+        
 	}
 	return WavFile;
 }
@@ -145,7 +145,7 @@ internal loaded_wav DEBUGLoadWav(debug_platform_read_entire_file *ReadEntireFile
 internal loaded_asset InitializeAsset(memory_arena *WorldArena, unsigned int AssetSize, unsigned int AssetChunks)
 {
 	loaded_asset NewAsset = {};
-
+    
 	unsigned int NewAssetSize = AssetChunks * AssetSize + AssetChunks * sizeof(asset_header); 
 	NewAsset.AssetSize = NewAssetSize;
 	NewAsset.RawData = (unsigned char *)PushSize(WorldArena, NewAssetSize);
@@ -158,12 +158,12 @@ internal loaded_asset PumpAssetUnchecked(loaded_asset Asset, unsigned char *Data
 {
 	asset_header AssetHeader = {};
 	asset_header LastHeader = Asset.Headers[ SafeSubtract(Asset.HeaderCount, 1) ];
-
+    
 	AssetHeader.OffsetBytes = LastHeader.OffsetBytes + LastHeader.NextChunkSize + sizeof(asset_header);
 	AssetHeader.NextChunkSize = ChunkSize;
 	AssetHeader.HeaderCode = RIFF_CODE('h','e','a','d');
 	Asset.Headers[Asset.HeaderCount++] = AssetHeader;
-
+    
 	unsigned char *BytePointer = Asset.RawData + AssetHeader.OffsetBytes - sizeof(asset_header);
 	*(asset_header *)BytePointer = AssetHeader;
 	
@@ -172,7 +172,7 @@ internal loaded_asset PumpAssetUnchecked(loaded_asset Asset, unsigned char *Data
 	{
 		*BytePointer++ = *Data++;
 	}
-
+    
 	return Asset;
 }
 
@@ -205,7 +205,7 @@ internal void WriteAsset(debug_platform_write_entire_file *WriteEntireFile, load
 internal loaded_asset LoadAsset(debug_platform_read_entire_file *ReadEntireFile, char *BaseFilePath, char *FileName)
 {
 	loaded_asset Result = {};
-
+    
 	char StringBuffer[256];
 	char *AbsoluteFilePath = GameCatStrings(BaseFilePath, FileName, StringBuffer);
 	debug_read_file_result FileResult = ReadEntireFile(AbsoluteFilePath);
@@ -226,19 +226,19 @@ internal loaded_asset LoadAsset(debug_platform_read_entire_file *ReadEntireFile,
 			FilePointer++;
 		} 
 	}
-
+    
 	return Result;	
 }
 
 //will parse through the asset and contruct a list of all blocks 
 //into a destination list who is some generic structure.
 #define ParseAsset(Asset, Dest, type){\
-type *DestPointer = Dest;\
-for (unsigned int x =  0; x < Asset.HeaderCount; x++)\
-{\
-	asset_header Header = Asset.Headers[x];\
-	*DestPointer++ = *(type *)(Asset.RawData + Header.OffsetBytes);\
-}\
+    type *DestPointer = Dest;\
+    for (unsigned int x =  0; x < Asset.HeaderCount; x++)\
+    {\
+        asset_header Header = Asset.Headers[x];\
+        *DestPointer++ = *(type *)(Asset.RawData + Header.OffsetBytes);\
+    }\
 }
 
 #define PIKABLUE_DATABASE_MAX_LINE_COUNT 1000
@@ -248,13 +248,13 @@ internal unsigned int ReadLines(debug_platform_read_entire_file *ReadEntireFile,
 {
 	char StringBuffer[256];
 	char *AbsoluteFilePath = GameCatStrings(BaseFilePath, FileName, StringBuffer);
-
+    
 	//char *Dest[PIKABLUE_DATABASE_MAX_LINE_COUNT]; //list of strings (character pointers)
 	char BackBuffer[256];
 	char *Buffer = BackBuffer;
 	unsigned int LineIndex = 0;
 	unsigned int LookingForLineEnd = 0;
-
+    
 	debug_read_file_result FileResult = ReadEntireFile(AbsoluteFilePath);
 	if (FileResult.Contents && FileResult.ContentSize)
 	{
@@ -309,7 +309,7 @@ internal unsigned int SplitLineToInt(char *Line, unsigned int *Dest)
 	*Dest = ASCIIToNumber(BackBuffer);
 	return ++Count;	
 }
- 
+
 internal unsigned int SplitLineToFloat(char *Line, float *Dest)
 {
 	char *Scan = Line;
@@ -345,7 +345,7 @@ internal void LoadFloatMatrix(float *Dest, char **Lines, unsigned int AmountOfLi
 		{
 			Dest[y * LineCount + x] = Line[x];
 		}
-
+        
 	}
 }
 

@@ -11,10 +11,10 @@ struct game_persistent_data
 	game_ui_scene CurrentScene;
 	unsigned int ElementSelected; //controls disply of current element
 	unsigned int MovingScene; //whether or not moving scene or current element
-
+    
 	float Timer; 
 	unsigned int Timing;
-
+    
 	char StringBuffer[256];
 };
 
@@ -54,7 +54,7 @@ internal void CreateNewElement(game_persistent_data *GameData, unsigned int Bitm
 	{
 		GameData->ElementSelected = true;
 	}
-
+    
 	GameData->CurrentElement = {}; //reset position
 	GameData->CurrentElement.BitmapIndex = BitmapIndex;
 	GameData->CurrentElement.Flip = FLIPFALSE;
@@ -70,7 +70,7 @@ internal void CreateNewText(game_persistent_data *GameData, unsigned int Flip, u
 	{
 		GameData->ElementSelected = true;
 	}
-
+    
 	GameData->CurrentElement = {};
 	GameData->CurrentElement.Flip = Flip;
 	GameData->CurrentElement.Invert = Invert;
@@ -115,14 +115,14 @@ GAME_UPDATE_RENDER(PikeBlueUIUpdate)
 		if (!Memory->IsInitialized)
 		{
 			InitializeArena(&GameData->MemoryArena, ((unsigned char *)Memory->Storage) + sizeof(game_persistent_data),
-				Memory->StorageSize - sizeof(game_persistent_data));
+                            Memory->StorageSize - sizeof(game_persistent_data));
 			//here we are going to load in all the required bitmaps into our bitmap array
 			GameData->Bitmaps[0] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\AttackBackground.bmp", StringBuffer));
 			GameData->Bitmaps[1] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\EnemyHealth.bmp", StringBuffer));
 			GameData->Bitmaps[2] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\LargeDialouge.bmp", StringBuffer));
 			GenerateByTiles(&GameData->MemoryArena, DEBUGLoadBMP( Memory->DEBUGPlatformReadEntireFile,
-				GameCatStrings(Input->BaseFilePath, "Data\\PokemonDemoFont.bmp", StringBuffer)), 16, 16, GameData->PikaBlueFont);
-
+                                                                 GameCatStrings(Input->BaseFilePath, "Data\\PokemonDemoFont.bmp", StringBuffer)), 16, 16, GameData->PikaBlueFont);
+            
 			//intialize buttons!
 			GameData->Buttons[0] = MakeButton(725.0f, 935.0f, 25.0f, 65.0f, 0.5f, 0.5f, 0.5f,"Construct Element");
 			GameData->Buttons[1] = MakeButton(725.0f, 935.0f, 85.0f, 125.0f, 0.5f, 0.5f, 0.5f,"Construct Text");
@@ -132,10 +132,10 @@ GAME_UPDATE_RENDER(PikeBlueUIUpdate)
 			GameData->Buttons[5] = MakeButton(880.0f, 935.0f, 335.0f, 375.0f, 0.2f, 0.2f, 0.2f,"Invert");
 			GameData->Buttons[6] = MakeButton(880.0f, 935.0f, 395.0f, 425.0f, 0.2f, 0.2f, 0.2f,"Flip");
 			GameData->Buttons[7] = MakeButton(880.0f, 935.0f, 445.0f, 485.0f, 0.2f, 0.2f, 0.2f,"Pos");
-
+            
 			Memory->IsInitialized = true;
 		}
-
+        
 		//below is a ton of default drawing routines for the application
 		DrawRect(buffer, 0.0f, 960.0f, 0.0f, 540.0f, 0.2f, 0.2f, 0.2f); //draw background
 		DrawRect(buffer, 20.0f, 520.0f, 20.0f, 520.0f, 0.3f, 0.3f, 0.3f); //draw drawing bounds
@@ -151,11 +151,11 @@ GAME_UPDATE_RENDER(PikeBlueUIUpdate)
 				DimButton(buffer, Button);
 			}
 		}  
-
+        
 		//draw all elements that have been created thus far
 		game_screen_position ScreenPos = {};
 		DrawUIScene(buffer, GameData->Bitmaps, GameData->PikaBlueFont, GameData->CurrentScene, GameData->CurrentScene.Position);
-
+        
 		//update and draw current element
 		if (GameData->ElementSelected)
 		{
@@ -238,7 +238,7 @@ GAME_UPDATE_RENDER(PikeBlueUIUpdate)
 				GameData->Timing = false;
 				GameData->Timer = 0.0f;
 			}
-
+            
 			if ( (Keyboard->Up.EndedDown) && (Keyboard->Up.HalfTransitionCount > 0) )
 			{
 				if (!GameData->MovingScene)
@@ -277,7 +277,7 @@ GAME_UPDATE_RENDER(PikeBlueUIUpdate)
 				GameData->Timing = false;
 				GameData->Timer = 0.0f;
 			}
-
+            
 			if ( (Keyboard->Down.EndedDown) && (Keyboard->Down.HalfTransitionCount > 0) )
 			{
 				if (!GameData->MovingScene)
@@ -316,22 +316,22 @@ GAME_UPDATE_RENDER(PikeBlueUIUpdate)
 				GameData->Timing = false;
 				GameData->Timer = 0.0f;
 			}
-
+            
 			//draw element
 			game_ui_element Element = GameData->CurrentElement;
 			DrawUIElement(buffer, GameData->Bitmaps, GameData->PikaBlueFont, GameData->CurrentElement, GameData->CurrentScene.Position);
-
+            
 			//draw information about the current element on the right hand panel
 			unsigned int PosX = (GameData->MovingScene)?(unsigned int)GameData->CurrentScene.Position.X:
-				(unsigned int)GameData->CurrentElement.RelativePosition.X;
+            (unsigned int)GameData->CurrentElement.RelativePosition.X;
 			unsigned int PosY = (GameData->MovingScene)?(unsigned int)GameData->CurrentScene.Position.Y:
-				(unsigned int)GameData->CurrentElement.RelativePosition.Y;
+            (unsigned int)GameData->CurrentElement.RelativePosition.Y;
 			BlitStringBoundless(buffer, GameData->PikaBlueFont, 725.0f, 225.0f, 
-				NumberToASCII(PosX,StringBuffer), 0);
+                                NumberToASCII(PosX,StringBuffer), 0);
 			BlitStringBoundless(buffer, GameData->PikaBlueFont, 725.0f, 245.0f, 
-				NumberToASCII(PosY,StringBuffer), 0);
+                                NumberToASCII(PosY,StringBuffer), 0);
 		}
-
+        
 		//below will handle when the user clicks the mouse
 		if ( (Input->MouseButtons[0].EndedDown) && (Input->MouseButtons[0].HalfTransitionCount > 0) )
 		{
@@ -381,7 +381,7 @@ GAME_UPDATE_RENDER(PikeBlueUIUpdate)
 				GameData->MovingScene = !GameData->MovingScene;
 			}
 		}
-
+        
 		//if we are supposed to time, then time 
 		if (GameData->Timing)
 		{

@@ -1,5 +1,5 @@
 internal void CatStrings(int SourceACount, char *SourceA, int SourceBCount,
- char *SourceB, int DestCount, char *Dest)
+                         char *SourceB, int DestCount, char *Dest)
 {
 	for (int index = 0; index < SourceACount; index++)
 	{
@@ -12,7 +12,7 @@ internal void CatStrings(int SourceACount, char *SourceA, int SourceBCount,
 	*Dest = 0;
 }
 
-inline unsigned int GetStringLength(char *String)
+INLINE unsigned int GetStringLength(char *String)
 {
 	unsigned int Count = 0;
 	while (*String != 0)
@@ -23,7 +23,7 @@ inline unsigned int GetStringLength(char *String)
 }
 
 //Here I have a destination length so I can manage overflows for small buffers.
-inline void CloneString(char *String, char *Dest, int DestLength)
+INLINE void CloneString(char *String, char *Dest, int DestLength)
 {
 	int Count = 0;
 	while ( (*String != 0) && (Count < DestLength) )
@@ -42,7 +42,7 @@ internal char *GameCatStrings(char *StringA, char *StringB, char *Dest)
 
 //currently this functions does not support negative numbers, 
 //it only supports whole integers
-inline char *NumberToASCII(unsigned int Number, char *Dest)
+INLINE char *NumberToASCII(unsigned int Number, char *Dest)
 {
 	char Buffer[256];
 	char *Temp = Buffer;
@@ -71,7 +71,7 @@ inline char *NumberToASCII(unsigned int Number, char *Dest)
 
 //currently this functions does not support negative numbers, 
 //it only supports whole integers
-inline unsigned int ASCIIToNumber(char *String)
+unsigned int ASCIIToNumber(char *String)
 {
 	unsigned int Result = 0;
 	unsigned int StringLength = GetStringLength(String);
@@ -85,7 +85,7 @@ inline unsigned int ASCIIToNumber(char *String)
 	return Result;
 }
 
-inline float ASCIIToFloat(char *String)
+float ASCIIToFloat(char *String)
 {
 	//okay here are the steps
 	//conver the string to the same string but without decimal

@@ -9,11 +9,11 @@ functions.
 //is "functions" so it better be god damned functional. Right?
 
 //this is pretty functional. Just takes in a list and an Id and returns something
-inline pokemon_move FillPokemonMove(pokemon_move *MoveDatabase, unsigned int MoveID)
+INLINE pokemon_move FillPokemonMove(pokemon_move *MoveDatabase, unsigned int MoveID)
 {
 	pokemon_move Result = {};
 	pokemon_move Move = MoveDatabase[MoveID];
-
+    
 	//NOTe below I do a lot of cloning just a warning!
 	//It's a warning because I think its dumb.
 	//I think generally if you have to clone something you may be doing something wrong
@@ -29,13 +29,13 @@ inline pokemon_move FillPokemonMove(pokemon_move *MoveDatabase, unsigned int Mov
 	Result.Priority = Move.Priority;
 	Result.Flags = Move.Flags;
 	CloneString(Move.Name, Result.Name, 15);
-
+    
 	return Result;
 }
 
 //this function will ask if they are equal and if they are not it will check if they are equal by some 
 //very stupid small amount.
-inline unsigned int AreFloatsEqual(float Float1, float Float2)
+INLINE unsigned int AreFloatsEqual(float Float1, float Float2)
 {
 	unsigned int Result = false;
 	if (Float1 == Float2)
@@ -54,7 +54,7 @@ internal loaded_bitmap BitmapFromASCII(loaded_bitmap *PokemonDemoFont, char Char
 {
 	loaded_bitmap Result = {};
 	unsigned int Index = (unsigned int) Character;
-
+    
 	if ( (Character >= 65) && (Character <= 90) )
 	{
 		Index -= 65;
@@ -87,26 +87,26 @@ internal loaded_bitmap BitmapFromASCII(loaded_bitmap *PokemonDemoFont, char Char
 	{
 		Index = 0;
 	}
-
+    
 	Result = PokemonDemoFont[Index];
 	return Result;
 }
 
 internal loaded_bitmap GetSpriteByRect(memory_arena *WorldArena, loaded_bitmap *SpriteMap, unsigned int *CharacterPointer, int Width, int Height,
-	unsigned int BackgroundColor)
+                                       unsigned int BackgroundColor)
 {
 	loaded_bitmap Result = {};
 	Result.Scale = MASTER_BITMAP_SCALE;
-
+    
 	if ( !(Width < 0) )
 	{
 		Result.Width = Width;
 		Result.Height = Height;
 		Result.PixelPointer = PushArray(WorldArena, (Result.Width * Result.Height), unsigned int);
-
+        
 		unsigned int *Row = CharacterPointer;
 		unsigned int *DestRow = Result.PixelPointer + Result.Width * (Result.Height - 1);
-
+        
 		for (unsigned int Y = 0; Y < Result.Height; Y++)
 		{	
 			unsigned int *Pixel = (unsigned int *)Row;
@@ -136,21 +136,21 @@ internal loaded_bitmap GetSpriteByRect(memory_arena *WorldArena, loaded_bitmap *
 		Result.Height = 16;
 		Result.PixelPointer = PushArray(WorldArena, Result.Width * Result.Height, unsigned int);
 	}
-
+    
 	return Result;
 }
 
 internal loaded_bitmap GetSpriteFromSpriteMap(memory_arena *WorldArena,
-	loaded_bitmap *SpriteMap, unsigned int *PixelPointer, unsigned int TileSize)
+                                              loaded_bitmap *SpriteMap, unsigned int *PixelPointer, unsigned int TileSize)
 {
 	unsigned int MinX = TileSize;
 	unsigned int MaxX = 0;
 	unsigned int MinY = TileSize;
 	unsigned int MaxY = 0;
-
+    
 	unsigned int *Row = PixelPointer;
 	unsigned int BackgroundColor = *Row;
-
+    
 	for (unsigned int Y = 0; Y < TileSize;++Y)
 	{	
 		unsigned int *Pixel = (unsigned int *)Row;
@@ -180,13 +180,13 @@ internal loaded_bitmap GetSpriteFromSpriteMap(memory_arena *WorldArena,
 		}
 		Row -= SpriteMap->Width;
 	}
-
+    
 	unsigned int *NewRow = PixelPointer - MinY * SpriteMap->Width + MinX;
 	return GetSpriteByRect(WorldArena, SpriteMap, NewRow, 1 + MaxX - MinX, 1 + MaxY - MinY, BackgroundColor);
 }
 
 internal void GenerateByTiles(memory_arena *MemoryArena, loaded_bitmap Bitmap, unsigned int TileWidth, 
-	unsigned int TileHeight, loaded_bitmap *Dest)
+                              unsigned int TileHeight, loaded_bitmap *Dest)
 {
 	unsigned int BitmapTileWidth = Bitmap.Width / TileWidth;
 	unsigned int BitmapTileHeight = Bitmap.Height / TileHeight;
@@ -207,7 +207,7 @@ internal void GenerateByTiles(memory_arena *MemoryArena, loaded_bitmap Bitmap, u
 }
 
 internal void UnPackBitmapTiles(memory_arena *WorldArena, loaded_bitmap Bitmap,
-	unsigned int TileWidth, unsigned int TileHeight, unsigned int TilePadding, loaded_bitmap *Dest)
+                                unsigned int TileWidth, unsigned int TileHeight, unsigned int TilePadding, loaded_bitmap *Dest)
 {
 	unsigned int BitmapTileWidth = (Bitmap.Width + TilePadding) / (TileWidth + TilePadding);
 	unsigned int BitmapTileHeight = (Bitmap.Height + TilePadding) / (TileHeight + TilePadding);
@@ -256,67 +256,105 @@ internal vector2f Normalized(vector2f v)
 	return v;
 }
 
-internal hf_entity *GetEntityAhead(game_state *GameState, hf_entity Player, float TileSizeInMeters)
-{
-	//so what we are going to do is determine the tile right in front of us
-	//then check if any entity out of all the entities collide with that tile
-	//if they do return that entity
-	hf_entity *Result = {};
 
+vector2f TileMapPosToWorldSpace(tile_map *map, tile_map_position map_pos)
+{
+    vector2f world_pos;
+    
+    world_pos.X = map_pos.AbsTileX * map->TileSizeInMeters + 
+        map_pos.X;
+    world_pos.Y = map_pos.AbsTileY * map->TileSizeInMeters + 
+        map_pos.X;
+    
+    return world_pos;
+}
+
+
+// w.r.t to player
+internal entity *GetEntityAhead(tile_map *map, game_state *GameState, entity_npc *Player)
+{
+	// so what we are going to do is determine the tile right in front of us
+	// then check if any entity out of all the entities collide with that tile
+	// if they do return that entity
+	entity *Result = NULL;
+    
 	for (unsigned int x = 0; x < GameState->EntityCount; x++)
 	{
-		if (GameState->EntityResidence[x] == ENTITY_HIGH)
-		{
-			hf_entity Entity = GameState->HighEntities[x];
-			
-			vector2f PlayerPos = {}; vector2f InteractablePos = {}; vector2f PlayerDirection = {};
-			PlayerPos.X = Player.Pos.X; PlayerPos.Y = Player.Pos.Y; 
-			InteractablePos.X = Entity.Pos.X; InteractablePos.Y = Entity.Pos.Y;
-
-			//below we shift both positions such that the player is at the origin
-			InteractablePos.X -= PlayerPos.X; PlayerPos.X = 0.0f;
-			InteractablePos.Y -= PlayerPos.Y; PlayerPos.Y = 0.0f;
-
-			if (Player.MoveDirection == UP)
-			{
-				PlayerDirection.X = 0.0f; PlayerDirection.Y = 1.0f; 
-			}
-			else if (Player.MoveDirection == DOWN)
-			{
-				PlayerDirection.X = 0.0f; PlayerDirection.Y = -1.0f;
-			}
-			else if (Player.MoveDirection == LEFT)
-			{
-				PlayerDirection.X = -1.0f; PlayerDirection.Y = 0.0f;
-			}
-			else if (Player.MoveDirection == RIGHT)
-			{
-				PlayerDirection.X = 1.0f; PlayerDirection.Y = 0.0f;
-			}
-
-			if ( (LineLength(PlayerPos, InteractablePos) < TileSizeInMeters * 1.5f) && 
-				(Dot(PlayerDirection, Normalized(InteractablePos)) > 0.5f) )
-			{
-				Result = &GameState->HighEntities[x];
-				break;
-			}
-		}
+		entity Entity = GameState->AllEntities[x];
+        
+        // Make sure that the entity is not thyself.
+        if (Entity.npc != Player)
+        {
+            vector2f PlayerPos = {};
+            vector2f PlayerDirection = {};vector2f InteractablePos = {}; 
+            PlayerPos = TileMapPosToWorldSpace(map, Player->Entity->TileMapPos);  
+            InteractablePos = TileMapPosToWorldSpace(map, Entity.TileMapPos);
+            
+            //below we shift both positions such that the player is at the origin
+            InteractablePos.X -= PlayerPos.X; PlayerPos.X = 0.0f;
+            InteractablePos.Y -= PlayerPos.Y; PlayerPos.Y = 0.0f;
+            
+            // break the player's current direction into
+            // the normal vector direction
+            if (Player->MoveDirection == UP)
+            {
+                PlayerDirection.X = 0.0f; PlayerDirection.Y = 1.0f; 
+            }
+            else if (Player->MoveDirection == DOWN)
+            {
+                PlayerDirection.X = 0.0f; PlayerDirection.Y = -1.0f;
+            }
+            else if (Player->MoveDirection == LEFT)
+            {
+                PlayerDirection.X = -1.0f; PlayerDirection.Y = 0.0f;
+            }
+            else if (Player->MoveDirection == RIGHT)
+            {
+                PlayerDirection.X = 1.0f; PlayerDirection.Y = 0.0f;
+            }
+            
+            if ( (LineLength(PlayerPos, InteractablePos) < 1.6f) && 
+                (Dot(PlayerDirection, Normalized(InteractablePos)) > 0.5f) )
+            {
+                Result = &GameState->AllEntities[x];
+                break;
+            }
+        }
 	}
 	
 	return Result; 
 } 
 
-internal entity_npc *GetNPCFromEntity(entity_npc *Testificates, entity *Entity)
+// NOTE: This function literally makes an empty entity, with absolutely nothing.
+entity *CreateEntity(game_state *gameState)
 {
-	entity_npc *Result = {};
-	for (unsigned int x = 0; x < TESTIFICATE_AMOUNT; x++)
-	{
-		entity_npc NPC = Testificates[x];
-		if (NPC.Entity == Entity)
-		{
-			Result = &Testificates[x];
-			break;
-		}
-	}
-	return Result;
+    // Check to see if there is room for a new entity
+    if (gameState->EntityCount >= MAX_ENTITIES)
+    {
+        // NOTE: I throw the program here because I have no error handling code for making too many entities... SO, I hope that it is always the case that there are a small amount of entities.
+        Assert(0);
+        return NULL;
+    }
+    
+    entity Entity = gameState->AllEntities[gameState->EntityCount++];
+    
+    return &gameState->AllEntities[gameState->EntityCount - 1];
+}
+
+entity_npc *CreateNPC(game_state *gameState)
+{
+    // make a new entity
+    entity *Entity = CreateEntity(gameState);
+    
+    // make a new npc
+    gameState->NPC_Count++;
+    
+    // entity points to npc
+    Entity->npc = &gameState->_npc_storage[gameState->NPC_Count - 1];
+    
+    // npc points back to entity
+    entity_npc *npc = Entity->npc;
+    npc->Entity = Entity;
+    
+    return npc;
 }

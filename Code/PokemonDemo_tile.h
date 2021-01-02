@@ -1,4 +1,4 @@
-struct unpacked_tile
+typedef struct 
 {
 	unsigned int TileType;
 	unsigned int AreaIdentifier;
@@ -9,14 +9,14 @@ struct unpacked_tile
 	unsigned int Walkable;
 	unsigned int Transparent;
 	unsigned int AbovePlayer;
-};
+} unpacked_tile;
 
-struct tile_chunk
+typedef struct 
 {
 	unsigned int *Tiles;
-};
+} tile_chunk;
 
-struct tile_chunk_position
+typedef struct 
 {
 	unsigned int TileChunkX;
 	unsigned int TileChunkY;
@@ -24,31 +24,31 @@ struct tile_chunk_position
 	
 	unsigned int TileX;
 	unsigned int TileY;
-};
+} tile_chunk_position; 
 
-struct tile_map_position
+typedef struct 
 {
 	unsigned int AbsTileX;
 	unsigned int AbsTileY;
 	unsigned int AbsTileZ;
-
- 	float X; //now these are in meters, yay!
- 	float Y;
-};
+    
+    float X; //now these are in meters, yay!
+    float Y;
+} tile_map_position;
 
 //NOTE: The tile map structure is a thing that contains like all 
 //the tile chunks
-struct tile_map 
+typedef struct  
 {
 	unsigned int ChunkMask;
 	unsigned int ChunkShift;
-
+    
 	float TileSizeInMeters;
-
+    
 	unsigned int WorldCountX;
 	unsigned int WorldCountY;
 	unsigned int WorldCountZ;
 	int ChunkSize;
-
+    
 	tile_chunk *TileChunks;
-};
+} tile_map;

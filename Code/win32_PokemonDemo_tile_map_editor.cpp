@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include "PokemonDemo.h"
 #include "win32_PikaBlue.h"
+#include "win32_PikaBlue_Functions.cpp"
+//#include "PikaBlue_Strings.cpp"
 
 #define ID_Save 1
 #define ID_Load 2
@@ -44,14 +46,14 @@ global_variable int GlobalOffsetX = 0;
 global_variable int GlobalOffsetY = 0;
 
 internal void DrawSelector(game_offscreen_buffer *Buffer, float MinX, float MaxX, float MinY, float MaxY,
-	float R, float G, float B, float size)
+                           float R, float G, float B, float size)
 {
 	float dx = MaxX - MinX;
 	float dy = MinY - MaxY;
-
+    
 	DrawRect(Buffer, MinX, MinX + size, MaxY, MinY, R, G, B);
 	DrawRect(Buffer, MaxX - size, MaxX, MaxY, MinY, R, G, B);
-
+    
 	DrawRect(Buffer, MinX, MaxX, MaxY, MaxY + size, R, G, B);
 	DrawRect(Buffer, MinX, MaxX, MinY - size, MinY, R, G, B);
 }
@@ -76,19 +78,19 @@ inline unpacked_tile GetEditorTile(tile_chunk Chunk, unsigned int TileX, unsigne
 internal unpacked_tile GetTileAtMouseChecked(int MouseX, int MouseY, int *TileX, int *TileY, int TileSizeInPixels)
 {
 	unpacked_tile Result = {};
-
+    
 	MouseY = TileSizeInPixels * 16 - MouseY;
-
+    
 	float X = (float)MouseX / (float)TileSizeInPixels;
 	float Y = (float)MouseY / (float)TileSizeInPixels;
-
+    
 	if( (X >= 0.0f) || (X < 16.0f) || (Y >= 0.0f) || (Y < 16.0f) )
 	{
 		Result = GetEditorTile(GlobalTileChunk, *TileX, *TileY);
 		*TileX = FloorFloatToInt(X);
 		*TileY = FloorFloatToInt(Y);
 	}
-
+    
 	return Result;
 }
 
@@ -103,7 +105,7 @@ inline void BufferToDrawSpace(int TileSizeInPixels, int *MouseX, int *MouseY)
 {	
 	int OffsetX = (globalBackBuffer.width - 16 * TileSizeInPixels) / 2;
 	int OffsetY = (globalBackBuffer.height - 16 * TileSizeInPixels) / 2;
-
+    
 	*MouseX = *MouseX - OffsetX;
 	*MouseY = *MouseY - OffsetY;
 }
@@ -266,15 +268,15 @@ internal void SwitchViewingMode(short ViewingModeID)
 		}break;
 		default:
 		{
-
+            
 		}break;
 	}
 }
 
 LRESULT CALLBACK Win32WindowProc(HWND window,
-	UINT message,
-	WPARAM wParam,
-	LPARAM lParam)
+                                 UINT message,
+                                 WPARAM wParam,
+                                 LPARAM lParam)
 {
 	LRESULT result = 0;
 	switch(message)
@@ -313,11 +315,11 @@ LRESULT CALLBACK Win32WindowProc(HWND window,
 			HDC DeviceContext = BeginPaint(window,&paint);
 			win32_window_dimension dimensions = Win32GetWindowDimension(window);
 			/*
-			int x = paint.rcPaint.left;
-			int y = paint.rcPaint.top;
-			LONG height = paint.rcPaint.bottom - paint.rcPaint.top;
-			LONG width = paint.rcPaint.right - paint.rcPaint.left;
-			*/
+   int x = paint.rcPaint.left;
+   int y = paint.rcPaint.top;
+   LONG height = paint.rcPaint.bottom - paint.rcPaint.top;
+   LONG width = paint.rcPaint.right - paint.rcPaint.left;
+   */
 			Win32DisplayBufferWindow(DeviceContext,&globalBackBuffer,dimensions.width,dimensions.height);
 			EndPaint(window,&paint);
 		}break;
@@ -331,28 +333,33 @@ LRESULT CALLBACK Win32WindowProc(HWND window,
 			result = DefWindowProc(window,message,wParam,lParam);
 		}break;
 	}
-
+    
 	return result;
 }
 
+
+
 int CALLBACK WinMain(HINSTANCE Instance,
-	HINSTANCE PrevInstance, 
-	LPSTR cmdLine,
-	int showCode) 
+                     HINSTANCE PrevInstance, 
+                     LPSTR cmdLine,
+                     int showCode) 
 {
-
-	//load a tile map on startup here
-	GlobalTileChunk = LoadChunk( DEBUGPlatformReadEntireFile,
-		"C:\\PokemonDemo\\Data\\TileChunk.chunk"); 
-
-	//if there is no tile map make a blank tile map
-	if(!GlobalTileChunk.Tiles)
+    
+    win32_state Win32State;
+    Win32GetRelativePaths(&Win32State);
+    char StringBuffer[256];
+    
+    //load a tile map on startup here
+    GlobalTileChunk = LoadChunk( DEBUGPlatformReadEntireFile, GameCatStrings(Win32State.BaseFilePath, "Data\\TileChunk.chunk", StringBuffer)); 
+    
+    //if there is no tile map make a blank tile map
+    if(!GlobalTileChunk.Tiles)
 	{
-		GenerateBlankChunk("C:\\PokemonDemo\\Data\\TileChunk.chunk");
+		GenerateBlankChunk(StringBuffer);
 		GlobalTileChunk = LoadChunk( DEBUGPlatformReadEntireFile,
-			"C:\\PokemonDemo\\Data\\TileChunk.chunk"); 
+                                    StringBuffer); 
 	}	
-
+    
 	//below I make some memory
 	//below is the code to initialize that good old memory, we like memory
 	game_memory GameMemory = {}; GameMemory.StorageSize = MegaBytes(64);
@@ -360,23 +367,23 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	if (GameMemory.Storage){ GameMemory.Valid = true;}
 	GameMemory.TransientStorageSize = GigaBytes((long int)1);
 	GameMemory.TransientStorage = VirtualAlloc(0,GameMemory.TransientStorageSize,MEM_COMMIT,PAGE_READWRITE);
-
+    
 	//initialize memory arena
 	InitializeArena(&MemoryArena, ((unsigned char *)GameMemory.Storage), GameMemory.StorageSize);
-
+    
 	//load the tiles
-	UnPackBitmapTiles(&MemoryArena, DEBUGLoadBMP(DEBUGPlatformReadEntireFile, 
-		"C:\\PokemonDemo\\Data\\PikaBlueTileSet.bmp"), 16, 16, 1, TileSet);
-
+	UnPackBitmapTiles(&MemoryArena, DEBUGLoadBMP(DEBUGPlatformReadEntireFile, GameCatStrings(Win32State.BaseFilePath, "Data\\PikaBlueTileSet.bmp", StringBuffer) 
+                                                 ), 16, 16, 1, TileSet);
+    
 	LARGE_INTEGER PerfCountFrequency;
 	QueryPerformanceFrequency(&PerfCountFrequency);
 	PerfCountFrequency64 = PerfCountFrequency.QuadPart;
-
+    
 	UINT DesiredSchedularGranularity = 1;
 	bool SleepGranular = (timeBeginPeriod(DesiredSchedularGranularity) == TIMERR_NOERROR);
-
+    
 	Win32ResizeDIBSection(&globalBackBuffer, 960, 540);
-
+    
 	WNDCLASS WindowClass = {}; 
 	WindowClass.style = CS_VREDRAW|CS_HREDRAW; //ensuring the window will redraw after being resized
 	WindowClass.lpfnWndProc = Win32WindowProc; //Setting callback to recieve windows messages
@@ -384,29 +391,29 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	WindowClass.hCursor = LoadCursor(0, IDC_ARROW);
 	//WindowClass.hIcon;
 	WindowClass.lpszClassName = "PokemonDemoWindowClassTileMapEditor"; //rather pointless line, eh.
-
+    
 	AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hFile, "File");           
 	AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hEdit, "Edit");
 	AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hView, "View");
 	AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hHelp, "Help");
-
+    
 	AppendMenu(hFile, MF_STRING, ID_Save, "Save");
 	AppendMenu(hFile, MF_STRING, ID_Load, "Load");
 	AppendMenu(hFile, MF_STRING, ID_Exit, "Exit");
-	               
+    
 	AppendMenu(hEdit, MF_STRING, ID_Undo, "Undo");
 	AppendMenu(hEdit, MF_STRING, ID_Redo, "Redo");
 	AppendMenu(hEdit, MF_STRING, ID_Clear, "Clear");
 	AppendMenu(hEdit, MF_STRING, ID_NextBrush, "Next Brush");
 	AppendMenu(hEdit, MF_STRING | MF_CHECKED, ID_Texture, "Texture Override");
 	AppendMenu(hEdit, MF_STRING | MF_UNCHECKED, ID_Eraser, "Eraser");
-
+    
 	AppendMenu(hView, MF_UNCHECKED | MF_STRING, ID_Walkable, "Walkable");
 	AppendMenu(hView, MF_UNCHECKED | MF_STRING, ID_Transparency, "Transparency");
 	AppendMenu(hView, MF_UNCHECKED | MF_STRING, ID_AbovePlayer, "Above Player");
 	AppendMenu(hView, MF_CHECKED | MF_STRING, ID_Layer1, "Layer 1");
 	AppendMenu(hView, MF_UNCHECKED | MF_STRING, ID_Layer2, "Layer 2");
-
+    
 	SetMenuItemBitmaps(hEdit, ID_Texture, MF_BYCOMMAND, 0, 0); //This sets the menu to use the default checkmark
 	SetMenuItemBitmaps(hEdit, ID_Eraser, MF_BYCOMMAND, 0, 0);
 	SetMenuItemBitmaps(hView, ID_Walkable, MF_BYCOMMAND, 0, 0);
@@ -414,9 +421,9 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	SetMenuItemBitmaps(hView, ID_Layer2, MF_BYCOMMAND, 0, 0);
 	SetMenuItemBitmaps(hView, ID_Transparency, MF_BYCOMMAND, 0, 0);
 	SetMenuItemBitmaps(hView, ID_AbovePlayer, MF_BYCOMMAND, 0, 0);
-       
+    
 	AppendMenu(hHelp, MF_STRING, ID_VWS, "Visit website"); 
-
+    
 	if(RegisterClass(&WindowClass))
 	{
 		HWND WindowHandle = CreateWindowEx(
@@ -434,7 +441,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 			0);
 		if(WindowHandle)
 		{
-
+            
 			HDC RefreshDC = GetDC(WindowHandle);
 			int MonitorRefreshRateHz = 60;
 			int Win32RefreshRate = GetDeviceCaps(RefreshDC, VREFRESH);
@@ -445,11 +452,11 @@ int CALLBACK WinMain(HINSTANCE Instance,
 			float GameUpdateHz (MonitorRefreshRateHz/2.0f);
 			float TargetSecondsElapsedPerFrame = 1.0f / GameUpdateHz;
 			ReleaseDC(WindowHandle,RefreshDC);
-
+            
 			globalRunning = true;
-
+            
 			LARGE_INTEGER LastCounter = Win32GetWallClock();
-
+            
 			while(globalRunning)
 			{
 				MSG message;
@@ -468,11 +475,11 @@ int CALLBACK WinMain(HINSTANCE Instance,
 						}break;
 					}
 				}
-
+                
 				float TileSizeInMeters = 1.4f;
 				int TileSizeInPixels = 32;
 				float MetersToPixels = (float)TileSizeInPixels / TileSizeInMeters; 
-
+                
 				POINT MouseP;
 				GetCursorPos(&MouseP);
 				ScreenToClient(WindowHandle, &MouseP);
@@ -481,7 +488,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 				int MouseZ = 0;
 				bool MouseButtons[5];
 				MouseToBufferSpace(WindowHandle,&MouseX, &MouseY);
-
+                
 				char Buffer[256];
 				wsprintf(Buffer, "Mouse posX is %d, posY is %d\n", MouseX, MouseY);
 				OutputDebugStringA(Buffer);
@@ -491,18 +498,18 @@ int CALLBACK WinMain(HINSTANCE Instance,
 				MouseButtons[2] = ((GetKeyState(VK_MBUTTON) & (1 << 15)) == 1);
 				MouseButtons[3] = ((GetKeyState(VK_XBUTTON1) & (1 << 15)) == 1);
 				MouseButtons[4] = ((GetKeyState(VK_XBUTTON2) & (1 << 15)) == 1);
-
+                
 				game_offscreen_buffer GameBuffer = {};
 				GameBuffer.memory = globalBackBuffer.memory;
 				GameBuffer.width = globalBackBuffer.width;
 				GameBuffer.height = globalBackBuffer.height;
 				GameBuffer.pitch = globalBackBuffer.pitch;
 				GameBuffer.BytesPerPixel = globalBackBuffer.bytesPerPixel;
-
+                
 				//draw viewing area
 				DrawRect(&GameBuffer, 0.0f, (float)GameBuffer.width, 0.0f,(float)GameBuffer.height, 0.2f, 0.2f, 0.2f);
 				DrawRect(&GameBuffer, 800.0f, 960.0f, 0.0f, 540.0f, 1.0f, 1.0f, 1.0f);
-
+                
 				//draw pallete, and handle and draw brush
 				unsigned int PalleteRow = 0;
 				unsigned int CurrentTile = 0;
@@ -525,7 +532,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 							GlobalBrush = CurrentTile + 1;
 						}
 					}					
-
+                    
 					if ( ++CurrentTile % 9 == 0 )
 					{
 						PalleteRow++;
@@ -536,7 +543,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 				BufferToDrawSpace(TileSizeInPixels, &MouseX, &MouseY);
 				GlobalOffsetX = (GameBuffer.width - 16 * TileSizeInPixels) / 2;
 				GlobalOffsetY = (GameBuffer.height - 16 * TileSizeInPixels) / 2;
-
+                
 				for (int x = 0; x < 16; x++)
 				{
 					for (int y = 0; y < 16; y++)
@@ -545,9 +552,9 @@ int CALLBACK WinMain(HINSTANCE Instance,
 						float MaxX = MinX + TileSizeInPixels;
 						float MinY = GameBuffer.height - (float)(y * TileSizeInPixels) - GlobalOffsetY;
 						float MaxY = MinY - TileSizeInPixels;
-
+                        
 						unpacked_tile Tile = GetEditorTile(GlobalTileChunk, x, y);
-
+                        
 						if (Tile.TileType)
 						{
 							if(Tile.Transparent)
@@ -565,7 +572,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 									loaded_bitmap ForegroundBitamp = GrabTileBitmap(TileSet, ForegroundIndex);
 									DrawBitmapScaled(&GameBuffer, ForegroundBitamp, MinX, MaxX, MaxY, MinY, FLIPFALSE, 2);
 								}
-
+                                
 							}
 							else
 							{
@@ -573,7 +580,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 								DrawBitmapScaled(&GameBuffer, TileBitmap, MinX, MaxX, MaxY, MinY, FLIPFALSE, 2);
 							}
 						}
-
+                        
 						if (ViewingMode & WALKABLE)
 						{
 							if (Tile.Walkable)
@@ -607,12 +614,12 @@ int CALLBACK WinMain(HINSTANCE Instance,
 								DrawRectWithOpacity(&GameBuffer, MinX, MaxX, MaxY, MinY, 0.7f, 0.0f, 0.0f, 100.0f);
 							}
 						}
-
+                        
 						int TileX = 0;
 						int TileY = 0;
-
+                        
 						unpacked_tile MouseTile = GetTileAtMouseChecked(MouseX, MouseY, &TileX, &TileY, TileSizeInPixels);
-
+                        
 						if ( (MouseTile.TileType > 0) && (TileX == x) && (TileY == y) )
 						{
 							if ( GetKeyState(VK_LBUTTON) & (1 << 15) )
@@ -650,7 +657,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 											}
 										}
 									}
-
+                                    
 									if (ViewingMode & WALKABLE)
 									{
 										Tile.Walkable = 0;
@@ -704,7 +711,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 											}
 										}
 									}
-
+                                    
 									if (ViewingMode & WALKABLE)
 									{
 										Tile.Walkable = 1;
@@ -714,18 +721,18 @@ int CALLBACK WinMain(HINSTANCE Instance,
 										Tile.AbovePlayer = 1;
 									}
 								}
-
+                                
 								SetEditorTile(&GlobalTileChunk, TileX, TileY, Tile);
-								SaveTileMap("C:\\PokemonDemo\\Data\\TileChunk.chunk", GlobalTileChunk);
+								SaveTileMap( GameCatStrings(Win32State.BaseFilePath, "Data\\TileChunk.chunk", StringBuffer), GlobalTileChunk);
 							}
 							DrawSelector(&GameBuffer, MinX, MaxX, MinY, MaxY, 0.0f, 0.0f, 0.0f, 3.0f);
 						}
 					}
 				}
-
+                
 				LARGE_INTEGER WorkCounter = Win32GetWallClock();
 				float WorkSecondsElapsed = Win32GetSecondsElapsed(LastCounter, WorkCounter, PerfCountFrequency64);
-
+                
 				float SecondsElapsedForFrame = WorkSecondsElapsed;
 				if (SecondsElapsedForFrame < TargetSecondsElapsedPerFrame)
 				{
@@ -747,10 +754,10 @@ int CALLBACK WinMain(HINSTANCE Instance,
 				{
 					//TODO(Noah): Logging, WE MISSED THE FRAME RATE!
 				}
-
+                
 				LARGE_INTEGER EndCounter = Win32GetWallClock();
 				LastCounter = EndCounter;
-
+                
 				HDC DeviceContext = GetDC(WindowHandle);
 				win32_window_dimension dimensions = Win32GetWindowDimension(WindowHandle);
 				Win32DisplayBufferWindow(DeviceContext,&globalBackBuffer,dimensions.width,dimensions.height);

@@ -1,13 +1,42 @@
 /*
+
+TODO:
+Bugs to fix:
+- I can walk through the bald man
+- Make final tile map edit
+
 TODO: Here is my big list of TODO's!
-The most important thing is that we want everything in this file to be the actual engine. 
-And everything else has to move to seperate files. Everything else includes all files who 
-are anything related to game specific features. 
+
+Small bugs...
+
+- Interacting with entities is still strange...
+- Add more text to the font
+- Word wrapping of text boxes sucks
+- Audio is spiky and gross sounding
+
+- Game lags from time to time
+
+-       The diff between smooth gameplay is so tight that plugging in my laptop charger makes it run smooth...
+
+- Shaders could be better
+- When you die due to arceus the camera pans across the entire map
+
+More features...
+- Entity path planning and moving around, that would be dope
+- epic walk on events (entity on tile(s), invisible)
+-        specifically, epic camera movement for arceus. Spear pillar background music!!!, camera fade
+- better audio mixing
+- audio fades
+
 */
 
 #include "PokemonDemo.h"
 
-struct render_item
+#if POKEMON_DEMO_DEBUG
+#include "stdio.h"
+#endif
+
+typedef struct 
 {
 	loaded_bitmap Bitmap;
 	float MinX; 
@@ -17,13 +46,13 @@ struct render_item
 	signed int Flip;
 	int ScaleFlag;
 	int Scalar;
-};
+} render_item;
 
-struct render_queue 
+typedef struct  
 {
 	int Count;
 	render_item RenderItems[256];
-};
+} render_queue;
 
 internal void PopFunction(void *Data, unsigned int QueueIndex)
 {
@@ -34,7 +63,9 @@ internal void PopFunction(void *Data, unsigned int QueueIndex)
         // if there is a function, call the function
 		FunctionQueue->Functions[QueueIndex].Function(FunctionQueue->Functions[QueueIndex].Data, FunctionQueue->Functions[QueueIndex].Param);
         
-		FunctionQueue->Functions[QueueIndex] = {}; //clear the function 
+        //clear the function 
+		//FunctionQueue->Functions[QueueIndex] = {}; 
+        PokeZeroMem(FunctionQueue->Functions[QueueIndex]);
         
 		if ((FunctionQueue->Count > 0) && !(QueueIndex > FunctionQueue->Count - 1))
 		{
@@ -43,7 +74,9 @@ internal void PopFunction(void *Data, unsigned int QueueIndex)
 				FunctionQueue->Functions[QueueIndex + x] = FunctionQueue->Functions[QueueIndex + x + 1];
 			}
             
-			FunctionQueue->Functions[FunctionQueue->Count - 1] = {}; //clear the last one too because it doesn't belong.
+            //clear the last one too because it doesn't belong.
+			//FunctionQueue->Functions[FunctionQueue->Count - 1] = {};
+            PokeZeroMem(FunctionQueue->Functions[FunctionQueue->Count - 1]);
 		}
         
 		FunctionQueue->Count--; //if there was actually a function there, then when we clear it, we are subtracting from the count.
@@ -51,7 +84,7 @@ internal void PopFunction(void *Data, unsigned int QueueIndex)
 } 
 
 //NOTE: These render items need to be considered
-inline void PostponeRenderItem(render_item RenderItem, render_queue *RenderQueue)
+INLINE void PostponeRenderItem(render_item RenderItem, render_queue *RenderQueue)
 {
 	RenderQueue->RenderItems[RenderQueue->Count] = RenderItem; 
 	RenderQueue->Count += 1;
@@ -158,7 +191,7 @@ internal void ArceusEvent(void *Data, unsigned int Param)
 {
     game_state *GameState = (game_state *)Data;
     SeedRandom(GameState);
-    PlaySoundEffect(GameState, GameState->SoundEffects[7], true); //start playing the areus theme
+    PlaySoundEffect(GameState, GameState->SoundEffects[7], true, 1.0f); //start playing the areus theme
     CloneBuffer(GameState->GameBuffer, &GameState->BackBuffer);
     InstantiateShader(GameState, &GameState->BackBuffer, GameState->LUT[0], 1.5f);
     SetPauseState(GameState, 2.0f);
@@ -194,16 +227,19 @@ internal void BlackOut(void *Data, unsigned int Param)
         }
     }
     
-    PlaySoundEffect(GameState, GameState->SoundEffects[2], false);
+    PlaySoundEffect(GameState, GameState->SoundEffects[2], false, 1.0f);
     SetPauseState(GameState, 2.0f);
-    GameState->Player.DormantEntity->TileMapPos.AbsTileX = 0;
-    GameState->Player.DormantEntity->TileMapPos.AbsTileY = 0;
-    GameState->Player.DormantEntity->TileMapPos.X = 0.7f;
-    GameState->Player.DormantEntity->TileMapPos.Y = 0.7f;
+    GameState->Player->Entity->TileMapPos.AbsTileX = 0;
+    GameState->Player->Entity->TileMapPos.AbsTileY = 0;
+    GameState->Player->Entity->TileMapPos.X = 0.7f;
+    GameState->Player->Entity->TileMapPos.Y = 0.7f;
     GameState->GameState = ENTERINGAREA;
 }
 
-extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
+#ifdef __cplusplus
+extern "C"
+#endif
+GAME_UPDATE_RENDER(GameUpdateRender)
 {
     char StringBuffer[256];
     game_user_gamepad_input *Controller = &Input->GamepadInput[0]; //get controller
@@ -221,7 +257,7 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
             GameState->GameState = OPENING; //set the game state
             
             //load in the pokemon database.
-            loaded_asset Asset = LoadAsset(Memory->DEBUGPlatformReadEntireFile, Input->BaseFilePath, "Data\\PokemonDatabase.dat");
+            loaded_asset Asset = LoadAsset(Memory->DEBUGPlatformReadEntireFile, Input->BaseFilePath, "Data//PokemonDatabase.dat");
             ParseAsset(Asset, GameState->PokemonDatabase, pokemon_database_data);
             
             //load in all the pokemon cries
@@ -233,21 +269,21 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
             GameState->NatureDatabase[0][3] = 1.0f; GameState->NatureDatabase[0][4] = 1.0f; GameState->NatureDatabase[0][5] = 1.0f;
             
             //load in the UserInterfaces
-            loaded_asset UserInterfaceAsset = LoadAsset(Memory->DEBUGPlatformReadEntireFile, Input->BaseFilePath, "Data\\UserInterfaces.dat");
+            loaded_asset UserInterfaceAsset = LoadAsset(Memory->DEBUGPlatformReadEntireFile, Input->BaseFilePath, "Data//UserInterfaces.dat");
             ParseAsset(UserInterfaceAsset, GameState->UserInterfaces, game_ui_scene); 
             
             //load in the music
-            GameState->Music = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\Battle.wav", StringBuffer));
-            GameState->SoundEffects[0] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\LevelUp.wav", StringBuffer));
-            GameState->SoundEffects[1] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\AdvanceMessage.wav", StringBuffer));
-            GameState->SoundEffects[2] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\Heal.wav", StringBuffer));
-            GameState->SoundEffects[3] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\Pikachu.wav", StringBuffer));
-            GameState->SoundEffects[4] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\PokemonLeagueDay.wav", StringBuffer));
-            GameState->SoundEffects[5] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\Thud.wav", StringBuffer));
-            GameState->SoundEffects[6] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\ArceusCry.wav", StringBuffer));
-            GameState->SoundEffects[7] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\ArceusTheme.wav", StringBuffer));
-            GameState->SoundEffects[8] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\Victory.wav", StringBuffer));
-            GameState->SoundEffects[9] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\BuildExp.wav", StringBuffer));
+            GameState->Music = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//Battle.wav", StringBuffer));
+            GameState->SoundEffects[0] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//LevelUp.wav", StringBuffer));
+            GameState->SoundEffects[1] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//AdvanceMessage.wav", StringBuffer));
+            GameState->SoundEffects[2] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//Heal.wav", StringBuffer));
+            GameState->SoundEffects[3] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//Pikachu.wav", StringBuffer));
+            GameState->SoundEffects[4] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//PokemonLeagueDay.wav", StringBuffer));
+            GameState->SoundEffects[5] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//Thud.wav", StringBuffer));
+            GameState->SoundEffects[6] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//ArceusCry.wav", StringBuffer));
+            GameState->SoundEffects[7] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//ArceusTheme.wav", StringBuffer));
+            GameState->SoundEffects[8] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//Victory.wav", StringBuffer));
+            GameState->SoundEffects[9] = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//BuildExp.wav", StringBuffer));
             
             //So we initialize the arena by sending a pointer to the arena, saying where in memory to begin allocating, 
             //then we pass how much memory for the arena. Very trivial.
@@ -256,19 +292,19 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
             
             //load in the type matchup database
             char *Lines[256];
-            unsigned int LineAmount = ReadLines(Memory->DEBUGPlatformReadEntireFile, &GameState->WorldArena, Input->BaseFilePath, "Data\\TypeMatchupDatabase.txt", Lines);
+            unsigned int LineAmount = ReadLines(Memory->DEBUGPlatformReadEntireFile, &GameState->WorldArena, Input->BaseFilePath, "Data//TypeMatchupDatabase.txt", Lines);
             LoadFloatMatrix(&GameState->TypeMatchupDatabase[0][0], Lines, LineAmount);
             
             //load in LUTS for shader
-            GameState->LUT[0] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\LUT1.bmp", StringBuffer));
-            GameState->LUT[1] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\LUT2.bmp", StringBuffer));
-            GameState->LUT[2] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\LUT3.bmp", StringBuffer));
-            GameState->LUT[3] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\LUT4.bmp", StringBuffer));
+            GameState->LUT[0] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//LUT1.bmp", StringBuffer));
+            GameState->LUT[1] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//LUT2.bmp", StringBuffer));
+            GameState->LUT[2] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//LUT3.bmp", StringBuffer));
+            GameState->LUT[3] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//LUT4.bmp", StringBuffer));
             
             //load in bitmaps for UI
-            GameState->Bitmaps[0] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\AttackBackground.bmp", StringBuffer));
-            GameState->Bitmaps[1] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\EnemyHealth.bmp", StringBuffer));
-            GameState->Bitmaps[2] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\LargeDialouge.bmp", StringBuffer));
+            GameState->Bitmaps[0] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//AttackBackground.bmp", StringBuffer));
+            GameState->Bitmaps[1] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//EnemyHealth.bmp", StringBuffer));
+            GameState->Bitmaps[2] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//LargeDialouge.bmp", StringBuffer));
             
             //load message box bitmap
             //GameState->MessageBox = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\MessageBox.bmp", StringBuffer));
@@ -276,104 +312,135 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
             //WRITE REQUIRED DATABASE FILES
             //DEBUGCreatePokemonAnimations(&GameState->WorldArena, Memory->DEBUGPlatformWriteEntireFile, Input->BaseFilePath);
             DEBUGCreateMoveDataBase(&GameState->WorldArena, Memory->DEBUGPlatformWriteEntireFile, 
-                                    GameCatStrings(Input->BaseFilePath, "Data\\MoveDatabase.dat", StringBuffer));
+                                    GameCatStrings(Input->BaseFilePath, "Data//MoveDatabase.dat", StringBuffer));
             ///////////////////////
             
             //Load font
             GenerateByTiles(&GameState->WorldArena, DEBUGLoadBMP( Memory->DEBUGPlatformReadEntireFile,
-                                                                 GameCatStrings(Input->BaseFilePath, "Data\\PokemonDemoFont.bmp", StringBuffer)), 16, 16, GameState->PokemonDemoFont);
+                                                                 GameCatStrings(Input->BaseFilePath, "Data//PokemonDemoFont.bmp", StringBuffer)), 16, 16, GameState->PokemonDemoFont);
             
             //load player sprites and initialize player
-            GameState->SpriteMap = DEBUGLoadBMP( Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\PlatinumSpriteSheet.bmp", StringBuffer));
-            //GameState->Player.Entity = &GameState->AllEntity[GameState->EntityCount++];
-            //LoadSaveGame(Memory->DEBUGPlatformReadEntireFile, GameState, GameCatStrings(Input->BaseFilePath, "Data\\SaveData.sav", StringBuffer));
-            //GameState->Player.Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 1, 6);
+            GameState->SpriteMap = DEBUGLoadBMP( Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//PlatinumSpriteSheet.bmp", StringBuffer));
             
-            //create a demo NPC
-            //GameState->TestificateCount++;
-            //GameState->Testificates[0].Entity = &GameState->AllEntity[GameState->EntityCount++]; 
-            //GameState->Testificates[0].Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 1, 4);
-            //CloneString("Kill yourself dude! Just do it.", GameState->Testificates[0].Entity->Message, 256); 
-            //GameState->Testificates[0].Entity->TileMapPos.AbsTileX = 17; GameState->Testificates[0].Entity->TileMapPos.X = 0.7f;
-            //GameState->Testificates[0].Entity->TileMapPos.AbsTileY = 5; GameState->Testificates[0].Entity->TileMapPos.Y = 0.7f;
+            // NOTE: In later code player 2 is the first entity in the array. This is odd, sure, but it is simply the state of things, so deal with it.
+            // create player two
+            { 
+                entity_npc *npc = CreateNPC(GameState);
+                
+                npc->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 1, 4);
+                
+                CloneString("Hi! I'm player two. Connect a controller to move me around!", npc->Entity->Message, 256); 
+                
+                npc->Entity->TileMapPos.AbsTileX = 17; npc->Entity->TileMapPos.X = 0.7f;
+                npc->Entity->TileMapPos.AbsTileY = 5; npc->Entity->TileMapPos.Y = 0.7f;
+            }
+            
+            // Make the primary player
+            { 
+                GameState->Player = CreateNPC(GameState);
+                //GameState->LastPlayer = CreateNPC(GameState);
+                
+                // Set up custom last player since it cannot be a standard entity.
+                GameState->LastPlayer.npc = &GameState->_lp_npc;
+                GameState->_lp_npc.Entity = &GameState->LastPlayer;
+                
+                //LoadSaveGame(Memory->DEBUGPlatformReadEntireFile, GameState, GameCatStrings(Input->BaseFilePath, "Data\\SaveData.sav", StringBuffer));
+                
+                GameState->Player->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 1, 6);
+            }
+            
             
             //create mom lmao
-            //GameState->TestificateCount++;
-            //GameState->Testificates[1].Entity = &GameState->AllEntity[GameState->EntityCount++]; 
-            //GameState->Testificates[1].Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 4, 12);
-            //CloneString("Honey, you need some milk. Here, let me heal your pokemon for you.", GameState->Testificates[1].Entity->Message, 256); 
-            //GameState->Testificates[1].Entity->TileMapPos.AbsTileX = 7; GameState->Testificates[1].Entity->TileMapPos.X = 0.7f;
-            //GameState->Testificates[1].Entity->TileMapPos.AbsTileY = 1; GameState->Testificates[1].Entity->TileMapPos.Y = 0.7f;
-            game_posponed_function MomFunction = {}; MomFunction.Data = GameState; MomFunction.Function = HealPokemon;
-            //GameState->Testificates[1].Entity->Function = MomFunction;
+            {
+                entity_npc *mom_npc = CreateNPC(GameState);
+                
+                mom_npc->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 4, 12);
+                CloneString("My lovely son :) Let me heal your pokemon for you!", mom_npc->Entity->Message, 256); 
+                mom_npc->Entity->TileMapPos.AbsTileX = 7; mom_npc->Entity->TileMapPos.X = 0.7f;
+                mom_npc->Entity->TileMapPos.AbsTileY = 1; mom_npc->Entity->TileMapPos.Y = 0.7f;
+                game_posponed_function MomFunction = {}; MomFunction.Data = GameState; MomFunction.Function = HealPokemon;
+                mom_npc->Entity->Function = MomFunction;
+            }
             
             //create arceus NPC
-            //GameState->TestificateCount++;
-            //GameState->Testificates[2].Entity = &GameState->AllEntity[GameState->EntityCount++];
-            //CloneString("Dodogyuuun!", GameState->Testificates[2].Entity->Message, 256); 
-            //GameState->Testificates[2].Entity->TileMapPos.AbsTileX = 24; GameState->Testificates[2].Entity->TileMapPos.X = 0.7f;
-            //GameState->Testificates[2].Entity->TileMapPos.AbsTileY = 56; GameState->Testificates[2].Entity->TileMapPos.Y = 0.7f;
-            //GameState->Testificates[2].MoveDirection = DOWN; //default arceus to facing down
-            game_posponed_function ArceusFunction = {}; ArceusFunction.Data = GameState; ArceusFunction.Function = ArceusEvent;
-            //GameState->Testificates[2].Entity->Function = ArceusFunction;
+            {
+                entity_npc *arceus_npc = CreateNPC(GameState);
+                
+                CloneString("Dodogyuuun!", arceus_npc->Entity->Message, 256); 
+                arceus_npc->Entity->TileMapPos.AbsTileX = 24; arceus_npc->Entity->TileMapPos.X = 0.7f;
+                arceus_npc->Entity->TileMapPos.AbsTileY = 56; arceus_npc->Entity->TileMapPos.Y = 0.7f;
+                //default arceus to facing down
+                arceus_npc->MoveDirection = DOWN; 
+                game_posponed_function ArceusFunction = {}; ArceusFunction.Data = GameState; ArceusFunction.Function = ArceusEvent;
+                arceus_npc->Entity->Function = ArceusFunction;
+                
+                //set arceus frames
+                arceus_npc->Entity->AnimationPlayer.Animations[0].Frames[UP * 4] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, 
+                                                                                                GameCatStrings(Input->BaseFilePath, "Data//ArceusOverworldUp.bmp", StringBuffer));
+                arceus_npc->Entity->AnimationPlayer.Animations[0].Frames[DOWN * 4] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, 
+                                                                                                  GameCatStrings(Input->BaseFilePath, "Data//ArceusOverworldDown.bmp", StringBuffer)) ;
+                arceus_npc->Entity->AnimationPlayer.Animations[0].Frames[LEFT * 4] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, 
+                                                                                                  GameCatStrings(Input->BaseFilePath, "Data//ArceusOverworldLeft.bmp", StringBuffer)) ;
+                arceus_npc->Entity->AnimationPlayer.Animations[0].Frames[RIGHT * 4] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, 
+                                                                                                   GameCatStrings(Input->BaseFilePath, "Data//ArceusOverworldRight.bmp", StringBuffer)) ;
+            }
             
-            //set arceus frames
-            //GameState->Testificates[2].Entity->AnimationPlayer.Animations[0].Frames[UP * 4] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, 
-            GameCatStrings(Input->BaseFilePath, "Data\\ArceusOverworldUp.bmp", StringBuffer);
-            //GameState->Testificates[2].Entity->AnimationPlayer.Animations[0].Frames[DOWN * 4] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, 
-            GameCatStrings(Input->BaseFilePath, "Data\\ArceusOverworldDown.bmp", StringBuffer) ;
-            //GameState->Testificates[2].Entity->AnimationPlayer.Animations[0].Frames[LEFT * 4] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, 
-            GameCatStrings(Input->BaseFilePath, "Data\\ArceusOverworldLeft.bmp", StringBuffer) ;
-            //GameState->Testificates[2].Entity->AnimationPlayer.Animations[0].Frames[RIGHT * 4] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, 
-            GameCatStrings(Input->BaseFilePath, "Data\\ArceusOverworldRight.bmp", StringBuffer) ;
-            
-            //create the sign
-            //entity *Sign = &GameState->AllEntity[GameState->EntityCount++];
-            //Sign->TileMapPos.AbsTileX = 1; Sign->TileMapPos.AbsTileY = 8;
-            //Sign->TileMapPos.X = 0.7f; Sign->TileMapPos.Y = 0.7f;
-            //CloneString("The words on the sign are unreadable.", Sign->Message, 256);
+            //create the sign entity
+            {
+                entity *Sign = CreateEntity(GameState);
+                Sign->TileMapPos.AbsTileX = 1; Sign->TileMapPos.AbsTileY = 8;
+                Sign->TileMapPos.X = 0.7f; Sign->TileMapPos.Y = 0.7f;
+                CloneString("The words on the sign read 'Thank's from playing! - Noah'.", Sign->Message, 256);
+            }
             
             //create the first door
-            //entity *Door = &GameState->AllEntity[GameState->EntityCount++];
-            //Door->TileMapPos.AbsTileX = 3; Door->TileMapPos.AbsTileY = 8;
-            //Door->TileMapPos.X = 0.7f; Door->TileMapPos.Y = 0.7f;
-            //CloneString("The door is locked from the inside.", Door->Message, 256);
+            {
+                entity *Door = CreateEntity(GameState);
+                Door->TileMapPos.AbsTileX = 3; Door->TileMapPos.AbsTileY = 8;
+                Door->TileMapPos.X = 0.7f; Door->TileMapPos.Y = 0.7f;
+                CloneString("The door is locked from the inside.", Door->Message, 256);
+            }
             
             //create the pokeball
-            //entity *Pokeball = &GameState->AllEntity[GameState->EntityCount++];
-            //Pokeball->TileMapPos.AbsTileX = 19; Pokeball->TileMapPos.AbsTileY = 29;
-            //Pokeball->TileMapPos.X = 0.7f; Pokeball->TileMapPos.Y = 0.7f;
-            //CloneString("The pokeball is empty.", Pokeball->Message, 256);
+            {
+                entity *Pokeball = CreateEntity(GameState);
+                Pokeball->TileMapPos.AbsTileX = 19; Pokeball->TileMapPos.AbsTileY = 29;
+                Pokeball->TileMapPos.X = 0.7f; Pokeball->TileMapPos.Y = 0.7f;
+                CloneString("The pokeball is empty.", Pokeball->Message, 256);
+            }
             
-            //create the door
-            //entity *Door2 = &GameState->AllEntity[GameState->EntityCount++];
-            //Door2->TileMapPos.AbsTileX = 19; Door2->TileMapPos.AbsTileY = 40;
-            //Door2->TileMapPos.X = 0.7f; Door2->TileMapPos.Y = 0.7f;
-            //CloneString("Proffesor Maple's house.", Door2->Message, 256);
+            //create the second door
+            {
+                entity *Door2 = CreateEntity(GameState);
+                Door2->TileMapPos.AbsTileX = 19; Door2->TileMapPos.AbsTileY = 40;
+                Door2->TileMapPos.X = 0.7f; Door2->TileMapPos.Y = 0.7f;
+                CloneString("A sign on the door reads, 'Professor Maple's House'. The door is locked.", Door2->Message, 256);
+            }
             
             
             //LOAD GENDERS
             UnPackBitmapTiles(&GameState->WorldArena, DEBUGLoadBMP( Memory->DEBUGPlatformReadEntireFile,
-                                                                   GameCatStrings(Input->BaseFilePath, "Data\\Genders.bmp", StringBuffer)), 6, 9, 0, GameState->Genders);
+                                                                   GameCatStrings(Input->BaseFilePath, "Data//Genders.bmp", StringBuffer)), 6, 9, 0, GameState->Genders);
+            
             //LOAD ATTACk BOXES
             UnPackBitmapTiles(&GameState->WorldArena, DEBUGLoadBMP( Memory->DEBUGPlatformReadEntireFile,
-                                                                   GameCatStrings(Input->BaseFilePath, "Data\\AttackBoxes.bmp", StringBuffer)), 124, 55, 0, GameState->AttackBoxes);
+                                                                   GameCatStrings(Input->BaseFilePath, "Data//AttackBoxes.bmp", StringBuffer)), 124, 55, 0, GameState->AttackBoxes);
             //LOAD TILES
             UnPackBitmapTiles(&GameState->WorldArena, DEBUGLoadBMP( Memory->DEBUGPlatformReadEntireFile,
-                                                                   GameCatStrings(Input->BaseFilePath, "Data\\PikaBlueTileSet.bmp", StringBuffer)), 16, 16, 1, GameState->TileSet);
+                                                                   GameCatStrings(Input->BaseFilePath, "Data//PikaBlueTileSet.bmp", StringBuffer)), 16, 16, 1, GameState->TileSet);
             //////////////////////
             
-            GameState->Hit2 = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\Hit2.wav", StringBuffer));
+            GameState->Hit2 = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//Hit2.wav", StringBuffer));
             //The spritemap I use for the battle backgrounds are thanks to Proffesor Valley who ripped them. 
-            GameState->BattleBackground = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\GrassBattle.bmp", StringBuffer));
+            GameState->BattleBackground = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//GrassBattle.bmp", StringBuffer));
             //The HP bars and other essential battle UI were ripped by Haru Raindose so big thanks to him.
-            GameState->EnemyHealth = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\EnemyHealth.bmp", StringBuffer));
-            GameState->PlayerHealth = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\PlayerHealth.bmp", StringBuffer));
-            GameState->HealthLUT = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\HealthLUT.bmp", StringBuffer));
+            GameState->EnemyHealth = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//EnemyHealth.bmp", StringBuffer));
+            GameState->PlayerHealth = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//PlayerHealth.bmp", StringBuffer));
+            GameState->HealthLUT = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//HealthLUT.bmp", StringBuffer));
             GameState->DEBUGAttackBackground = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, 
-                                                            GameCatStrings(Input->BaseFilePath, "Data\\AttackBackground.bmp", StringBuffer));
-            GameState->MoveSelector = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\MoveSelector.bmp", StringBuffer));
-            GameState->BattleButton = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\BattleButton.bmp", StringBuffer));
+                                                            GameCatStrings(Input->BaseFilePath, "Data//AttackBackground.bmp", StringBuffer));
+            GameState->MoveSelector = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//MoveSelector.bmp", StringBuffer));
+            GameState->BattleButton = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//BattleButton.bmp", StringBuffer));
             
             //push struct function will actually get the memory out. So we get what we want essentially.
             //In fact, in programming we always get what we want.
@@ -393,8 +460,8 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
             TileMap->TileChunks = PushArray(&GameState->WorldArena,
                                             TileMap->WorldCountX * TileMap->WorldCountY * TileMap->WorldCountZ, tile_chunk);
             
-            //below is the code to load in the world save (which has all the chunks in it)
-            LoadRawFile(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data\\World.world", StringBuffer), &GameState->LoadedWorld);
+            // below is the code to load in the world save (which has all the chunks in it)
+            LoadRawFile(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//World2.world", StringBuffer), &GameState->LoadedWorld);
             for (unsigned int x = 0; x < GameState->LoadedWorld.ChunkCount; x++)
             {
                 SetChunk(TileMap, GameState->LoadedWorld.ChunkPos[x].x, GameState->LoadedWorld.ChunkPos[x].y, 
@@ -402,10 +469,10 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
             }
             
             LoadPokemonDatabase(GameState, Memory->DEBUGPlatformReadEntireFile, 
-                                GameCatStrings(Input->BaseFilePath, "Data\\MoveDatabase.dat", StringBuffer));
+                                GameCatStrings(Input->BaseFilePath, "Data//MoveDatabase.dat", StringBuffer));
             
             //below is the code to initialize the demo pokemon
-            loaded_asset PartyPokemonAsset = LoadAsset(Memory->DEBUGPlatformReadEntireFile, Input->BaseFilePath, "Data\\Party.dat");
+            loaded_asset PartyPokemonAsset = LoadAsset(Memory->DEBUGPlatformReadEntireFile, Input->BaseFilePath, "Data//Party.dat");
             ParseAsset(PartyPokemonAsset, GameState->PokemonP, pokemon); 
             
             //initialze the continue interface
@@ -424,17 +491,19 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
             GameState->BackBuffer.BytesPerPixel = 4;
             
             Memory->IsInitialized = true;
-        }
+        } // done memory initialization
+        
         
         world *World = GameState->World;
         float CenterX = buffer->width / 2.0f;
         float CenterY = buffer->height / 2.0f;
         
+        // toggle fullscreen functionality.
         if(Keyboard->DebugButtons[0].EndedDown && Keyboard->DebugButtons[0].HalfTransitionCount > 0)
         {
             toggle_fullscreen_callback * ToggleFullscreen = Memory->ToggleFullscreen;
             ToggleFullscreen();
-            SaveGame(Memory->DEBUGPlatformWriteEntireFile, GameState, GameCatStrings(Input->BaseFilePath, "Data\\SaveData.sav", StringBuffer));
+            SaveGame(Memory->DEBUGPlatformWriteEntireFile, GameState, GameCatStrings(Input->BaseFilePath, "Data//SaveData.sav", StringBuffer));
         }
         
         GameState->GameTimer += Input->DeltaTime;
@@ -445,7 +514,7 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                 GameState->StateFlags -= PAUSE; //take away pause state
             }
         }
-        else
+        else // game is not paused
         {
             DrawRect(buffer, 0.0f, (float)buffer->width, 0.0f,(float)buffer->height, 0.0f, 0.0f, 0.0f);
             switch(GameState->GameState)
@@ -463,8 +532,8 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                     //the user pressed z
                     if(Keyboard->DebugButtons[1].EndedDown && Keyboard->DebugButtons[1].HalfTransitionCount > 0)
                     {
-                        PlaySoundEffect(GameState, GameState->SoundEffects[1], false);
-                        PlaySoundEffect(GameState, GameState->SoundEffects[3], false);
+                        PlaySoundEffect(GameState, GameState->SoundEffects[1], false, 1.0f);
+                        PlaySoundEffect(GameState, GameState->SoundEffects[3], false, 1.0f);
                         SetPauseState(GameState, 1.2f);
                         GameState->UserInterfaces[1].Active = false;
                         DrawRect(buffer, 0.0f, (float)buffer->width, 0.0f, (float)buffer->height, 0.0f, 0.0f, 0.0f);
@@ -477,6 +546,7 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                     //start playing the awesome music.
                     PlaySoundEffect(GameState, GameState->SoundEffects[4], true, 0.1f);
                     SetPauseState(GameState, 1.2f);
+                    // clear csreen to black
                     DrawRect(buffer, 0.0f, (float)buffer->width, 0.0f, (float)buffer->height, 0.0f, 0.0f, 0.0f);
                     GameState->GameState = OVERWORLD;
                 }break;
@@ -498,7 +568,7 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                     float ExtensionHeight = GameState->DEBUGAttackBackground.Height * 2.0f;
                     GameCatStrings("Go! ", GameState->PokemonB1.Pokemon->Nickname, StringBuffer);
                     CreateNewMessage(GameState, CenterX, CenterY + GameState->BattleBackground.Height - ExtensionHeight / 2.0f,
-                                     GameCatStrings(StringBuffer, "!", StringBuffer), 0);
+                                     GameCatStrings(StringBuffer, "!", StringBuffer), 0, NULL_GAME_FUNCTION);
                     
                     GameState->GameState = BATTLE;
                     GameState->StateFlags = ATTACKMENU;
@@ -629,8 +699,8 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                                     unsigned int DeltaSpeed = GameState->PokemonBackBuffer[0]->Speed - LastBattlePokemon.Speed;
                                     
                                     CreateNewMessage(GameState, CenterX, CanvasMaxY,
-                                                     GameCatStrings(GameState->PokemonBackBuffer[0]->Pokemon->Nickname," leveled up!", StringBuffer), 0);
-                                    PlaySoundEffect(GameState, GameState->SoundEffects[0], false);
+                                                     GameCatStrings(GameState->PokemonBackBuffer[0]->Pokemon->Nickname," leveled up!", StringBuffer), 0, NULL_GAME_FUNCTION);
+                                    PlaySoundEffect(GameState, GameState->SoundEffects[0], false, 1.0f);
                                     
                                     GameState->UserInterfaces[0].Active = true;
                                     
@@ -764,8 +834,9 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                     }
                     else if (GameState->StateFlags & TURN1)
                     {
-                        battle_pokemon *Attacker = {};
-                        battle_pokemon *Target = {}; 
+                        battle_pokemon *Attacker = NULL;
+                        battle_pokemon *Target = NULL;
+                        
                         if (GameState->StateFlags & USERFIRST)
                         {
                             Attacker = &GameState->PokemonB1;
@@ -784,8 +855,9 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                     }
                     else if (GameState->StateFlags & TURN2)
                     {
-                        battle_pokemon *Attacker = {};
-                        battle_pokemon *Target = {}; 
+                        battle_pokemon *Attacker = NULL;
+                        battle_pokemon *Target = NULL;
+                        
                         if (GameState->StateFlags & USERFIRST)
                         {
                             Attacker = &GameState->PokemonB2;
@@ -862,12 +934,12 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                             if (GameState->PokemonB1.Pokemon->Moves[GameState->PokemonB1.SelectedMove].PP != 0)
                             {
                                 GameState->StateFlags = GameState->StateFlags | TURN1;
-                                PlaySoundEffect(GameState, GameState->SoundEffects[1], false);
+                                PlaySoundEffect(GameState, GameState->SoundEffects[1], false, 1.0f);
                             }
                             else
                             {
                                 CreateNewMessage(GameState, CenterX, CanvasMaxY,
-                                                 "That move hasn't any PP left! Why you're a royal dumbnass aren't you? ", 0);
+                                                 "That move hasn't any PP left! Why you're a royal dumbass aren't you? ", 0, NULL_GAME_FUNCTION);
                             }
                             
                         }
@@ -884,7 +956,7 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                 }break;
                 case BLACKEDOUT:
                 {
-                    CreateNewMessage(GameState, CenterX, CenterY, "Luckily, someone found you and brought you to the nearest pokemon center.", 0);
+                    CreateNewMessage(GameState, CenterX, CenterY, "Luckily, someone found you and brought you to the nearest pokemon center.", 0, NULL_GAME_FUNCTION);
                     game_posponed_function PosponedFunction = {}; PosponedFunction.Data = GameState; PosponedFunction.Function = BlackOut;
                     PosponeSuperFunction(GameState, 4.0f, PosponedFunction);
                     GameState->GameState = CHILLING;
@@ -906,79 +978,90 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                     float dPlayer2X = 0.0f;
                     float dPlayer2Y = 0.0f;
                     
-                    //TODO: Should we handle the invertedness of our controller input in the win32 layer or in 
+                    // TODO: Should we handle the invertedness of our controller input in the win32 layer or in 
                     //the game layer. I don't know we shall revisit that sometime later.
                     
                     //below will handle events, so when the user interacts with something
-                    
-                    
                     if ( GameState->MessageQueue.Count == 0 )
                     {
-                        //entity *EntityAhead = GetEntityAhead(&GameState->AllEntity[1], GameState->Player, TileMap->TileSizeInMeters);
+                        entity *EntityAhead = GetEntityAhead(TileMap, GameState, GameState->Player);
                         
+#if POKEMON_DEMO_DEBUG
+                        //char epic_buffer[256];
+                        //int isEntityAhead = (EntityAhead == NULL) ? 0 : 1;
+                        //if (isEntityAhead)
+                        //printf("entity_ahead!\n");
+#endif
                         
-                        if (EntityAhead) //so provided there is an entity ahead of us lets do some processing
+                        if (EntityAhead != NULL) //so provided there is an entity ahead of us lets do some processing
                         {
                             if (!EntityAhead->WalkOnEvent)
                             {
+                                // get button down (previously up)
                                 if (Keyboard->DebugButtons[1].EndedDown && Keyboard->DebugButtons[1].HalfTransitionCount > 0)
-                                {	
+                                {
+                                    // check if the entity blits messages
                                     if (EntityAhead->Message[0])
                                     {
-                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT);
+                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, NULL_GAME_FUNCTION);
                                     }
                                     
+                                    
+                                    // Check for not arceus but there is still an event 
                                     if (EntityAhead->Function.Function && !StringEquals(EntityAhead->Message, "Dodogyuuun!"))
                                     {
                                         GameState->FunctionQueue.Functions[GameState->FunctionQueue.Count++] = EntityAhead->Function;
                                     }
+                                    // NOTE: The code below is specialized for the arceus entity
                                     else if (StringEquals(EntityAhead->Message ,"Dodogyuuun!"))
                                     {
-                                        //the entity is arceus
-                                        PopSound(GameState, 0); //stop playing background music
-                                        PlaySoundEffect(GameState, GameState->SoundEffects[6], false); //play arceus cry
+                                        // the entity is arceus
+                                        
+                                        // stop playing background music
+                                        PopSound(GameState, 0);
+                                        // play arceus cry
+                                        PlaySoundEffect(GameState, GameState->SoundEffects[6], false, 1.0f); 
+                                        // load the arceus function into the queue
                                         GameState->FunctionQueue.Functions[GameState->FunctionQueue.Count++] = EntityAhead->Function;
                                     }
                                     
-                                    
-                                    //NOTE: Below we check if its an NPC because an NPC would never be a walk on event.
-                                    //entity_npc *NPC = GetNPCFromEntity(GameState->Testificates, EntityAhead);
-                                    
-                                    
-                                    if (NPC) 
+                                    // Is entity an NPC?
+                                    // Make the NPC face the player when they interact with the player.
+                                    if (EntityAhead->npc != NULL)
                                     {
-                                        entity_npc Player = GameState->Player;
+                                        entity_npc *EntityAheadNPC = EntityAhead->npc;
+                                        entity_npc *Player = GameState->Player;
                                         
-                                        if (Player.MoveDirection == UP)
+                                        if (Player->MoveDirection == UP)
                                         {
-                                            NPC->MoveDirection = DOWN; 
+                                            EntityAheadNPC->MoveDirection = DOWN; 
                                         }
-                                        else if (Player.MoveDirection == DOWN)
+                                        else if (Player->MoveDirection == DOWN)
                                         {
-                                            NPC->MoveDirection = UP;
+                                            EntityAheadNPC->MoveDirection = UP;
                                         }
-                                        else if (Player.MoveDirection == LEFT)
+                                        else if (Player->MoveDirection == LEFT)
                                         {
-                                            NPC->MoveDirection = RIGHT;
+                                            EntityAheadNPC->MoveDirection = RIGHT;
                                         }
-                                        else if (Player.MoveDirection == RIGHT)
+                                        else if (Player->MoveDirection == RIGHT)
                                         {
-                                            NPC->MoveDirection = LEFT;
+                                            EntityAheadNPC->MoveDirection = LEFT;
                                         }
                                     }
                                     
                                 }
                             }
-                            else
+                            else // walk on event
                             {
                                 //so if the player is on the entity tile
-                                if ( (EntityAhead->TileMapPos.AbsTileX == GameState->Player.Entity->TileMapPos.AbsTileX) && 
-                                    (EntityAhead->TileMapPos.AbsTileY == GameState->Player.Entity->TileMapPos.AbsTileY) &&
-                                    (EntityAhead->TileMapPos.AbsTileZ == GameState->Player.Entity->TileMapPos.AbsTileZ))
+                                if ( (EntityAhead->TileMapPos.AbsTileX == GameState->Player->Entity->TileMapPos.AbsTileX) && 
+                                    (EntityAhead->TileMapPos.AbsTileY == GameState->Player->Entity->TileMapPos.AbsTileY) &&
+                                    (EntityAhead->TileMapPos.AbsTileZ == GameState->Player->Entity->TileMapPos.AbsTileZ))
                                 {
                                     if (EntityAhead->Message[0])
                                     {
-                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT);
+                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, NULL_GAME_FUNCTION);
                                     }
                                     
                                     if (EntityAhead->Function.Function)
@@ -986,37 +1069,40 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                                         GameState->FunctionQueue.Functions[GameState->FunctionQueue.Count++] = EntityAhead->Function;
                                     }									
                                 }
-                            }
-                        }
-                        */
+                            } // end of if (!walkon event)
+                        } // end of processing entity ahead
                         
-                            if (Keyboard->Up.EndedDown)
+                        
+                        // move the player acording to input 
+                        if (Keyboard->Up.EndedDown)
                         {
                             dPlayerY += PlayerSpeed;
-                            GameState->Player.MoveDirection = UP;
+                            GameState->Player->MoveDirection = UP;
                         }
                         else if (Keyboard->Down.EndedDown)
                         {
                             dPlayerY -= PlayerSpeed;
-                            GameState->Player.MoveDirection = DOWN;
+                            GameState->Player->MoveDirection = DOWN;
                         }
                         else if (Keyboard->Left.EndedDown)
                         {
                             dPlayerX -= PlayerSpeed;
-                            GameState->Player.MoveDirection = LEFT;
+                            GameState->Player->MoveDirection = LEFT;
                         }
                         else if (Keyboard->Right.EndedDown)
                         {
                             dPlayerX += PlayerSpeed;
-                            GameState->Player.MoveDirection = RIGHT;
+                            GameState->Player->MoveDirection = RIGHT;
                         }
                     }
-                    else //we are blitting a message!
+                    else // we are blitting a message!
                     {
+                        // user presses button to "skip" the message
                         if (Keyboard->DebugButtons[1].EndedDown && Keyboard->DebugButtons[1].HalfTransitionCount > 0)
                         {
-                            PlaySoundEffect(GameState, GameState->SoundEffects[1], false);
-                            PopMessage(&GameState->MessageQueue, 0); //kill the first message in the queue, because FIFO
+                            PlaySoundEffect(GameState, GameState->SoundEffects[1], false, 1.0f);
+                            //kill the first message in the queue, because FIFO
+                            PopMessage(&GameState->MessageQueue, 0); 
                             game_posponed_function PosponedFunction = {}; PosponedFunction.Data = &GameState->FunctionQueue; 
                             PosponedFunction.Function = PopFunction; 
                             GameState->SuperFunctionQueue.Functions[GameState->SuperFunctionQueue.Count++] = PosponedFunction;							 
@@ -1024,56 +1110,67 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                         
                     }
                     
-                    if (Controller->Down.EndedDown)
+                    // NOTE: The controller controls player 2, the keyboard controls player 1. The camera follows player 1, and player 2 is technically an NPC.
                     {
-                        dPlayer2Y += PlayerSpeed;
-                        GameState->Testificates[0].MoveDirection = UP;
-                        //GameState->CameraPos.Y -= Input->DeltaTime * 20.0f; 
-                    }
-                    else if (Controller->Up.EndedDown)
-                    {
-                        dPlayer2Y -= PlayerSpeed;
-                        GameState->Testificates[0].MoveDirection = DOWN;
-                        //GameState->CameraPos.Y += Input->DeltaTime * 20.0f;
-                    }
-                    else if (Controller->Left.EndedDown)
-                    {
-                        dPlayer2X -= PlayerSpeed;
-                        GameState->Testificates[0].MoveDirection = LEFT;
-                        //GameState->CameraPos.X -= Input->DeltaTime * 20.0f;
-                    }
-                    else if (Controller->Right.EndedDown)
-                    {
-                        dPlayer2X += PlayerSpeed;
-                        GameState->Testificates[0].MoveDirection = RIGHT;
-                        //GameState->CameraPos.X += Input->DeltaTime * 20.0f;
+                        // the second player
+                        entity_npc *PlayerTwo = GameState->AllEntities[0].npc;
+                        
+                        if (Controller->Down.EndedDown)
+                        {
+                            dPlayer2Y += PlayerSpeed;
+                            PlayerTwo->MoveDirection = UP;
+                            //GameState->CameraPos.Y -= Input->DeltaTime * 20.0f; 
+                        }
+                        else if (Controller->Up.EndedDown)
+                        {
+                            dPlayer2Y -= PlayerSpeed;
+                            PlayerTwo->MoveDirection = DOWN;
+                            //GameState->CameraPos.Y += Input->DeltaTime * 20.0f;
+                        }
+                        else if (Controller->Left.EndedDown)
+                        {
+                            dPlayer2X -= PlayerSpeed;
+                            PlayerTwo->MoveDirection = LEFT;
+                            //GameState->CameraPos.X -= Input->DeltaTime * 20.0f;
+                        }
+                        else if (Controller->Right.EndedDown)
+                        {
+                            dPlayer2X += PlayerSpeed;
+                            PlayerTwo->MoveDirection = RIGHT;
+                            //GameState->CameraPos.X += Input->DeltaTime * 20.0f;
+                        }
                     }
                     
-                    //If the player is moving and was not moving before, then reset AnimationTimer 
+                    // If the player is moving and was not moving before, then reset AnimationTimer 
                     if( (dPlayerX != 0.0f) | (dPlayerY != 0.0f) )
                     {
-                        if (GameState->Player.Walking == false)
+                        if (GameState->Player->Walking == false)
                         {
                             GameState->AnimationTimer = 0.0f;
                         }
-                        GameState->Player.Walking = true;
+                        GameState->Player->Walking = true;
                     }
                     else //otherwise the player is not walking
                     {
-                        GameState->Player.Walking = false;
+                        GameState->Player->Walking = false;
                     }
                     
-                    if( (dPlayer2X != 0.0f) | (dPlayer2Y != 0.0f) )
                     {
-                        if (GameState->Testificates[0].Walking == false)
+                        // the second player
+                        entity_npc *PlayerTwo = GameState->AllEntities[0].npc;
+                        
+                        if( (dPlayer2X != 0.0f) | (dPlayer2Y != 0.0f) )
                         {
-                            GameState->AnimationTimer = 0.0f;
+                            if (PlayerTwo->Walking == false)
+                            {
+                                GameState->AnimationTimer = 0.0f;
+                            }
+                            PlayerTwo->Walking = true;
                         }
-                        GameState->Testificates[0].Walking = true;
-                    }
-                    else //otherwise the player is not walking
-                    {
-                        GameState->Testificates[0].Walking = false;
+                        else //otherwise the player is not walking
+                        {
+                            PlayerTwo->Walking = false;
+                        }
                     }
                     
                     //Initialize some specs about the player's bounding box
@@ -1082,45 +1179,60 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                     
                     tile_map NewTileMap = *TileMap;
                     
-                    //below is the code to overwrite the walkablity of the tilemap based on the entitties
+                    // below is the code to overwrite the walkablity of the tilemap based on the entities
                     for (unsigned int x = 1; x < GameState->EntityCount; x++)
                     {
-                        entity Entity = GameState->AllEntity[x];
-                        if (!Entity.WalkOnEvent)
+                        entity Entity = GameState->AllEntities[x];
+                        
+                        // NOTE: All entities are walkable unless they are an NPC!
+                        if (Entity.npc != NULL)
                         {
-                            unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
-                                                              Entity.TileMapPos.AbsTileZ);
-                            Tile.Walkable = false;
-                            SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
-                                    Entity.TileMapPos.AbsTileZ, Tile);
+                            // Ignore the player and last player entities
+                            if (Entity.npc != GameState->Player)
+                            {
+                                unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                                                  Entity.TileMapPos.AbsTileZ);
+                                Tile.Walkable = false;
+                                SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                        Entity.TileMapPos.AbsTileZ, Tile);
+                            }
                         }
                     }
                     
                     //Below we move the player
-                    tile_map_position PlayerP = GameState->Player.Entity->TileMapPos;
+                    tile_map_position PlayerP = GameState->Player->Entity->TileMapPos;
                     tile_map_position NewPlayerP = PlayerP;
                     NewPlayerP.X = PlayerP.X + Input->DeltaTime * dPlayerX;
-                    NewPlayerP.Y = PlayerP.Y + Input->DeltaTime * dPlayerY;		
+                    NewPlayerP.Y = PlayerP.Y + Input->DeltaTime * dPlayerY;
+                    
+                    // must recompute tile space since the X and Y values are world space offsets from the tile.  
                     NewPlayerP = ReCalcTileMapPosition(TileMap, NewPlayerP);
                     
                     unsigned int SteppingOntoNewTile = false;
                     if ( (NewPlayerP.X != PlayerP.X) | (NewPlayerP.Y != PlayerP.Y) ) {SteppingOntoNewTile = true;}
                     
-                    //Below we actually ask the tile system to calculate our new tile position
-                    GameState->Player.Entity->TileMapPos = QueryNewTileMapPos(&NewTileMap, GameState->Player.Entity->TileMapPos,
-                                                                              NewPlayerP, GameState->Player.MoveDirection, 0.5f * PlayerWidth);
+                    // Below we actually ask the tile system to calculate our new tile position
+                    GameState->Player->Entity->TileMapPos = QueryNewTileMapPos(&NewTileMap, GameState->Player->Entity->TileMapPos,
+                                                                               NewPlayerP, GameState->Player->MoveDirection, 0.5f * PlayerWidth);
                     
                     vector2f PlayerPos = {}; 
-                    PlayerPos.X = GameState->Player.Entity->TileMapPos.AbsTileX * TileSizeInPixels + 
-                        GameState->Player.Entity->TileMapPos.X * MetersToPixels;
-                    PlayerPos.Y = GameState->Player.Entity->TileMapPos.AbsTileY * TileSizeInPixels + 
-                        GameState->Player.Entity->TileMapPos.Y * MetersToPixels;
+                    PlayerPos.X = GameState->Player->Entity->TileMapPos.AbsTileX * TileSizeInPixels + 
+                        GameState->Player->Entity->TileMapPos.X * MetersToPixels;
+                    PlayerPos.Y = GameState->Player->Entity->TileMapPos.AbsTileY * TileSizeInPixels + 
+                        GameState->Player->Entity->TileMapPos.Y * MetersToPixels;
+                    
+                    // TODO: Is the camera operating in pixel space?
                     GameState->CameraPos = Lerp2f(GameState->CameraPos, PlayerPos, 0.9f * Input->DeltaTime);
                     
+                    // NOTE: In the event that one of the NPC moves next frame, we must ensure that the tiles set walkable=false for this frame are reset!
+                    
+                    /*
                     for (unsigned int x = 1; x < GameState->EntityCount; x++)
                     {
-                        entity Entity = GameState->AllEntity[x];
-                        if (!Entity.WalkOnEvent)
+                        entity Entity = GameState->AllEntities[x];
+                        
+                        // NOTE: All entities are walkable unless they are an NPC!
+                        if (Entity.npc != NULL)
                         {
                             unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                                               Entity.TileMapPos.AbsTileZ);
@@ -1128,33 +1240,39 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                             SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                     Entity.TileMapPos.AbsTileZ, Tile);
                         }
-                    }
+                    }*/
+                    
                     
                     if ( GameState->ThudLastFrame && ( (NewPlayerP.AbsTileX != GameState->LastThudTile.x) |
-                                                      (NewPlayerP.AbsTileY != GameState->LastThudTile.y) | !GameState->Player.Walking ) )
+                                                      (NewPlayerP.AbsTileY != GameState->LastThudTile.y) | !GameState->Player->Walking ) )
                     {	
                         GameState->ThudLastFrame = false;
                     }
                     
                     //if im trying for a new tile and aftwards Im still not on that tile then I failed
-                    if ( SteppingOntoNewTile && ( (NewPlayerP.X != GameState->Player.Entity->TileMapPos.X) | 
-                                                 (NewPlayerP.Y != GameState->Player.Entity->TileMapPos.Y) ) && !GameState->ThudLastFrame)
+                    if ( SteppingOntoNewTile && ( (NewPlayerP.X != GameState->Player->Entity->TileMapPos.X) | 
+                                                 (NewPlayerP.Y != GameState->Player->Entity->TileMapPos.Y) ) && !GameState->ThudLastFrame)
                     {
-                        PlaySoundEffect(GameState, GameState->SoundEffects[5], false);
+                        PlaySoundEffect(GameState, GameState->SoundEffects[5], false, 1.0f);
                         GameState->ThudLastFrame = true;
                         GameState->LastThudTile.x = NewPlayerP.AbsTileX; GameState->LastThudTile.y = NewPlayerP.AbsTileY;
                     }
                     
-                    //below is the code for player 2
-                    tile_map_position Player2P = GameState->Testificates[0].Entity->TileMapPos;
-                    tile_map_position NewPlayer2P = Player2P;
-                    NewPlayer2P.X = Player2P.X + Input->DeltaTime * dPlayer2X;
-                    NewPlayer2P.Y = Player2P.Y + Input->DeltaTime * dPlayer2Y;		
-                    NewPlayer2P = ReCalcTileMapPosition(TileMap, NewPlayer2P);
-                    
-                    //Below we actually ask the tile system to calculate our new tile position
-                    GameState->Testificates[0].Entity->TileMapPos = QueryNewTileMapPos(TileMap, GameState->Testificates[0].Entity->TileMapPos,
-                                                                                       NewPlayer2P, GameState->Testificates[0].MoveDirection, 0.5f * PlayerWidth);
+                    // below is the code for player 2
+                    {
+                        // the second player
+                        entity_npc *PlayerTwo = GameState->AllEntities[0].npc;
+                        
+                        tile_map_position Player2P = PlayerTwo->Entity->TileMapPos;
+                        tile_map_position NewPlayer2P = Player2P;
+                        NewPlayer2P.X = Player2P.X + Input->DeltaTime * dPlayer2X;
+                        NewPlayer2P.Y = Player2P.Y + Input->DeltaTime * dPlayer2Y;		
+                        NewPlayer2P = ReCalcTileMapPosition(TileMap, NewPlayer2P);
+                        
+                        //Below we actually ask the tile system to calculate our new tile position
+                        PlayerTwo->Entity->TileMapPos = QueryNewTileMapPos(TileMap, PlayerTwo->Entity->TileMapPos,
+                                                                           NewPlayer2P, PlayerTwo->MoveDirection, 0.5f * PlayerWidth);
+                    }
                     
                     render_queue RenderQueue = {};
                     
@@ -1163,9 +1281,9 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                         for (int RelColumn = -40; RelColumn < 40; ++RelColumn)
                         {
                             //get the actual tile we are drawing
-                            unsigned int Column = GameState->Player.Entity->TileMapPos.AbsTileX + RelColumn;
-                            unsigned int Row = GameState->Player.Entity->TileMapPos.AbsTileY + RelRow;
-                            unpacked_tile TileInformation = GetTileValue(TileMap, Column, Row, GameState->Player.Entity->TileMapPos.AbsTileZ);
+                            unsigned int Column = GameState->Player->Entity->TileMapPos.AbsTileX + RelColumn;
+                            unsigned int Row = GameState->Player->Entity->TileMapPos.AbsTileY + RelRow;
+                            unpacked_tile TileInformation = GetTileValue(TileMap, Column, Row, GameState->Player->Entity->TileMapPos.AbsTileZ);
                             
                             //only draw the tile if it actually has a bitmap
                             //NOTE: This still works for transparent tiles
@@ -1212,8 +1330,8 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                                         }
                                         
                                         //check if the tile is a grass tile and the player is on it
-                                        if ( (ForegroundIndex == 112) && (GameState->Player.Entity->TileMapPos.AbsTileX == Column) &&
-                                            (GameState->Player.Entity->TileMapPos.AbsTileY == Row))
+                                        if ( (ForegroundIndex == 112) && (GameState->Player->Entity->TileMapPos.AbsTileX == Column) &&
+                                            (GameState->Player->Entity->TileMapPos.AbsTileY == Row))
                                         {
                                             loaded_bitmap Bitmap = GrabTileBitmap(GameState->TileSet, 47);
                                             render_item RenderItem = {};
@@ -1223,7 +1341,7 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                                             RenderItem.ScaleFlag = 0; RenderItem.Scalar = 0;
                                             RenderItem.Bitmap = ForegroundBitamp;
                                             PostponeRenderItem(RenderItem, &RenderQueue);
-                                            if (GameState->Player.Walking)
+                                            if (GameState->Player->Walking)
                                             {
                                                 RenderItem.Bitmap = Bitmap;
                                                 PostponeRenderItem(RenderItem, &RenderQueue);
@@ -1251,8 +1369,8 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                                     }
                                     
                                     //check if its a grass tile and the player is on that tile 
-                                    if ( (TileInformation.TileType == 112) && (GameState->Player.Entity->TileMapPos.AbsTileX == Column) &&
-                                        (GameState->Player.Entity->TileMapPos.AbsTileY == Row))
+                                    if ( (TileInformation.TileType == 112) && (GameState->Player->Entity->TileMapPos.AbsTileX == Column) &&
+                                        (GameState->Player->Entity->TileMapPos.AbsTileY == Row))
                                     {
                                         loaded_bitmap Bitmap = GrabTileBitmap(GameState->TileSet, 47);
                                         render_item RenderItem = {};
@@ -1262,7 +1380,7 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                                         RenderItem.ScaleFlag = 0; RenderItem.Scalar = 0;
                                         RenderItem.Bitmap = TileBitmap;
                                         PostponeRenderItem(RenderItem, &RenderQueue);
-                                        if (GameState->Player.Walking)
+                                        if (GameState->Player->Walking)
                                         {
                                             RenderItem.Bitmap = Bitmap;
                                             PostponeRenderItem(RenderItem, &RenderQueue);
@@ -1274,41 +1392,51 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                         }
                     }
                     
-                    //draw the high frequency entities.
+                    // Draw the NPC's
                     for (unsigned int x = 0; x < GameState->EntityCount; x++)
                     {
-                        if (GameState->EntityResidency[x] == ENTITY_HIGH)
+                        entity Entity = GameState->AllEntities[x];
+                        
+                        if (Entity.npc != NULL)
                         {
-                            hf_entity *Entity = &GameState->EntityHigh[x];
-                            dormant_entity *DormantEntity = &GameState->DormantEntity[x];
+                            entity_npc *currentNPC = Entity.npc;
                             
-                            float X = CenterX + Entity->Pos.X - GameState->CameraPos.X;
-                            float Y = CenterY - Entity->Pos.Y + GameState->CameraPos.Y;
+                            //float X = CenterX + Entity.Pos.X - GameState->CameraPos.X;
+                            //float Y = CenterY - Entity.Pos.Y + GameState->CameraPos.Y;
                             
-                            game_screen_position ScreenPos2 = {}; ScreenPos2.X = X; ScreenPos2.Y = Y;
+                            float X = Entity.TileMapPos.AbsTileX * TileSizeInPixels + 
+                                Entity.TileMapPos.X * MetersToPixels + CenterX - GameState->CameraPos.X;
                             
-                            DrawNPC(buffer, CurrentNPC, ScreenPos2);
+                            float Y = -1.0f * Entity.TileMapPos.AbsTileY * TileSizeInPixels - 
+                                Entity.TileMapPos.Y * MetersToPixels + CenterY + GameState->CameraPos.Y;
+                            
+                            vector2f ScreenPos2 = {}; ScreenPos2.X = X; ScreenPos2.Y = Y;
+                            
+                            DrawNPC(buffer, currentNPC, ScreenPos2);
                         }
                     }
                     
                     //draw player
-                    game_screen_position ScreenPos = {}; 
-                    ScreenPos.X = GameState->Player.Entity->TileMapPos.AbsTileX * TileSizeInPixels + 
-                        GameState->Player.Entity->TileMapPos.X * MetersToPixels + CenterX - GameState->CameraPos.X;
-                    ScreenPos.Y = -1.0f * GameState->Player.Entity->TileMapPos.AbsTileY * TileSizeInPixels - 
-                        GameState->Player.Entity->TileMapPos.Y * MetersToPixels + CenterY + GameState->CameraPos.Y;
-                    DrawNPC(buffer, GameState->Player, ScreenPos);
+                    
+                    /*{
+                        vector2f ScreenPos = {}; 
+                        ScreenPos.X = GameState->Player->Entity->TileMapPos.AbsTileX * TileSizeInPixels + 
+                            GameState->Player->Entity->TileMapPos.X * MetersToPixels + CenterX - GameState->CameraPos.X;
+                        ScreenPos.Y = -1.0f * GameState->Player->Entity->TileMapPos.AbsTileY * TileSizeInPixels - 
+                            GameState->Player->Entity->TileMapPos.Y * MetersToPixels + CenterY + GameState->CameraPos.Y;
+                        DrawNPC(buffer, GameState->Player, ScreenPos);
+                    }*/
                     
                     //draw any items that were posponed!
                     DrawRenderQueueItems(buffer, &RenderQueue);
                     
                     //if the player stepped onto a new tile!
-                    if ( (GameState->Player.Entity->TileMapPos.AbsTileX != GameState->LastPlayer.TileMapPos.AbsTileX) |
-                        (GameState->Player.Entity->TileMapPos.AbsTileY != GameState->LastPlayer.TileMapPos.AbsTileY))
+                    if ( (GameState->Player->Entity->TileMapPos.AbsTileX != GameState->LastPlayer.TileMapPos.AbsTileX) |
+                        (GameState->Player->Entity->TileMapPos.AbsTileY != GameState->LastPlayer.TileMapPos.AbsTileY))
                     {
                         //get the information about the tile we are on
-                        unpacked_tile TileInformation = GetTileValue(TileMap, GameState->Player.Entity->TileMapPos.AbsTileX,
-                                                                     GameState->Player.Entity->TileMapPos.AbsTileY, GameState->Player.Entity->TileMapPos.AbsTileZ);
+                        unpacked_tile TileInformation = GetTileValue(TileMap, GameState->Player->Entity->TileMapPos.AbsTileX,
+                                                                     GameState->Player->Entity->TileMapPos.AbsTileY, GameState->Player->Entity->TileMapPos.AbsTileZ);
                         
                         unsigned int PlayerOnGrassTile = false;
                         if (TileInformation.Transparent)
@@ -1332,7 +1460,7 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                         if( PlayerOnGrassTile & TryForRandomEncounter(GameState))
                         {
                             PopSound(GameState, 0); //stop playing background music
-                            PlaySoundEffect(GameState, GameState->Music, true); //start plaing battle music
+                            PlaySoundEffect(GameState, GameState->Music, true, 1.0f); //start plaing battle music
                             SeedRandom(GameState);
                             
                             //generate the wild pokemon!
@@ -1363,17 +1491,23 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
             GameState->AnimationTimer += Input->DeltaTime;
             if (GameState->AnimationTimer > AnimationDeltaTime)
             {
-                if (GameState->Player.Walking)
+                /*
+                if (GameState->Player->Walking)
                 {
                     //increment the counter of the first animation on the animation player
-                    GameState->Player.Entity->AnimationPlayer.Animations[0].Counter++;
+                    GameState->Player->Entity->AnimationPlayer.Animations[0].Counter++;
                 }
+                */
                 
-                for (int x = 0; x < TESTIFICATE_AMOUNT; x++)
+                for (unsigned int x = 0; x < GameState->EntityCount; x++)
                 {
-                    if (GameState->Testificates[x].Walking)
+                    entity_npc *NPC = GameState->AllEntities[x].npc;
+                    if (NPC != NULL)
                     {
-                        GameState->Testificates[x].Entity->AnimationPlayer.Animations[0].Counter++;		
+                        if (NPC->Walking)
+                        {
+                            NPC->Entity->AnimationPlayer.Animations[0].Counter++;
+                        }
                     }
                 }
                 
@@ -1420,10 +1554,17 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                 }
             }
             
-            GameState->LastPlayer = *GameState->Player.Entity;
-        }
+            // deep copy of time components
+            // GameState->LastPlayer = GameState->Player;
+            GameState->LastPlayer.npc->Walking = GameState->Player->Walking;
+            GameState->LastPlayer.npc->MoveDirection = GameState->Player->MoveDirection;
+            
+            GameState->LastPlayer.TileMapPos = GameState->Player->Entity->TileMapPos;
+        } // end of testing for game state and updating accordingly
         
-        //NOte there are 10 functions
+        
+        
+        //Note there are 10 functions
         for (unsigned int x = 0; x < 10; x++)
         {
             game_posponed_function PosponedFunction = GameState->SuperFunctionQueue.Functions[x];
@@ -1441,7 +1582,7 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
         }
         
         
-        //here, right below the pause we can do some shader code because I allow shader code to execute outside of the pause
+        // here, right below the pause we can do some shader code because I allow shader code to execute outside of the pause
         if (GameState->Shader.Active)
         {
             if (!GameState->Shader.source2)
@@ -1453,10 +1594,13 @@ extern "C" GAME_UPDATE_RENDER(GameUpdateRender)
                 ExecuteShader2(buffer, &GameState->Shader, Input->DeltaTime);
             }
         }
-    }
+    } // end of test for if the game memory exists
 }
 
-extern "C" GAME_GET_SOUND_SAMPLES(GameGetSoundSamples)
+#ifdef __cplusplus
+extern "C"
+#endif
+GAME_GET_SOUND_SAMPLES(GameGetSoundSamples)
 {
     //GameUpdateSound(SoundBuffer,256);
     

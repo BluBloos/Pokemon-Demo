@@ -26,6 +26,8 @@
 #include "PokemonDemo.h"
 #include "win32_PikaBlue.h"
 
+#include "win32_PikaBlue_Functions.cpp"
+
 struct win32_DI_ENUM_CONTEXT 
 { 
     DIJOYCONFIG* pPreferredJoyCfg; 
@@ -189,67 +191,11 @@ TOGGLE_FULLSCREEN_CALLBACK(ToggleFullscreenCallback)
 	GameTryingFullscreen = true;
 }
 
-internal int StringLength(char *String)
-{
-	int Count = 0;
-	while(*String++)
-	{
-		++Count;
-	}
-	return Count;
-}
-
 internal void Win32BuildFilePath(win32_state *State, char *FileName,
 								 int DestCount, char *Dest)
 {
-	CatStrings(State->OnePastLastSlash - State->EXEFileName, State->EXEFileName,
-			   StringLength(FileName),FileName,DestCount,Dest);
-}
-
-inline int EqualsPokemonDemo(char *String)
-{
-	char *PokemonDemo = "PokemonDemo";
-	for (char *Scan = String; *Scan && *PokemonDemo;Scan++)
-	{
-		if (*Scan == *PokemonDemo++)
-		{
-			continue;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-internal void Win32GetRelativePaths(win32_state *State)
-{
-	DWORD SizeofFileName = GetModuleFileNameA(0, State->EXEFileName,
-											  sizeof(State->EXEFileName));
-	State->OnePastLastSlash = State->EXEFileName;
-	for (char *Scan = State->EXEFileName;*Scan;++Scan)
-	{
-		if (*Scan == '\\')
-		{
-			State->OnePastLastSlash = Scan + 1;
-		}
-	}
-	for (char *Scan = State->EXEFileName;*Scan;++Scan)
-	{
-		if (*Scan == 'P')
-		{
-			if ( EqualsPokemonDemo(Scan) )
-			{
-				//NOTE: Here I put the dest count to 0 because it's not actually
-				//being used
-				CatStrings(Scan - State->EXEFileName, State->EXEFileName, 
-						   12,"PokemonDemo\\",0, State->BaseFilePath);
-				break;
-			}
-		}
-	}
-	
+	CatStrings( (int)(State->OnePastLastSlash - State->EXEFileName), State->EXEFileName,
+			   GetStringLength(FileName),FileName,DestCount,Dest);
 }
 
 internal void Win32FreeDirectInput() 
@@ -827,6 +773,50 @@ LRESULT CALLBACK Win32WindowProc(HWND window,
 
 global_variable LONGLONG PerfCountFrequency64; 
 
+#if POKEMON_DEMO_DEBUG
+#include <stdio.h>
+#include <io.h>
+#include <fcntl.h>
+#define MAX_CONSOLE_LINES 500
+
+internal void Win32OpenConsole()
+{
+    int hConHandle;
+    long lStdHandle;
+    CONSOLE_SCREEN_BUFFER_INFO coninfo;
+    FILE *fp;
+    
+    // allocate a console for this app
+    //https://docs.microsoft.com/en-us/windows/console/allocconsole
+    AllocConsole();
+    SetConsoleTitleA("Maccis Console");
+    
+    // set the screen buffer to be big enough to let us scroll text
+    //https://docs.microsoft.com/en-us/windows/console/getconsolescreenbufferinfo
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+    coninfo.dwSize.Y = MAX_CONSOLE_LINES;
+    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
+    
+    // redirect unbuffered STDOUT to the console
+    //https://msdn.microsoft.com/en-us/library/bdts1c9x.aspx
+    //https://msdn.microsoft.com/en-us/library/88k7d7a7.aspx
+    lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT); //convert windows handle to c runtime handle
+    fp = _fdopen( hConHandle, "w" );
+    *stdout = *fp;
+    //setvbuf( stdout, NULL, _IONBF, 0 ); //associate no buffer
+    freopen_s( &fp, "CONOUT$", "w", stdout);
+    
+    lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+    fp = _fdopen( hConHandle, "w" );
+    *stderr = *fp;
+    //setvbuf( stdout, NULL, _IONBF, 0 ); //associate no buffer
+    freopen_s(&fp, "CONOUT$" , "w" , stderr);
+}
+
+#endif
+
 //NOTE (Noah): main entry point of program
 //NOTE (Noah): use devenv command to debug in Visual Studio
 int CALLBACK WinMain(HINSTANCE Instance,
@@ -834,7 +824,12 @@ int CALLBACK WinMain(HINSTANCE Instance,
 					 LPSTR cmdLine,
 					 int showCode) 
 {
-	win32_state Win32State = {};
+#if POKEMON_DEMO_DEBUG
+    //Win32OpenConsole();
+    //printf("Hello, World!\n");
+#endif
+    
+    win32_state Win32State = {};
 	
 	Win32GetRelativePaths(&Win32State);
 	

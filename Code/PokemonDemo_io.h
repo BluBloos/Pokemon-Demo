@@ -8,20 +8,20 @@ enum
 	Wav_ChunkID_data = RIFF_CODE('d','a','t','a')
 };
 
-struct wav_header
+typedef struct 
 {
 	int ChunkID;
 	int FileSize;
 	int WaveID;
-};
+} wav_header;
 
-struct wav_chunk_header
+typedef struct 
 {
 	int ChunkID;
 	int ChunkSize;
-};
+} wav_chunk_header;
 
-struct wav_fmt
+typedef struct 
 {
 	short wFormatTag; //Format code
 	short nChannels; //Number of interleaved channels
@@ -33,17 +33,17 @@ struct wav_fmt
 	short wValidBitsPerSample; //Number of valid bits
 	int dwChannelMask; //Speaker position mask
 	char SubFormat[16]; //GUID, including the data format code
-};
+} wav_fmt;
 
-struct wav_file_cursor
+typedef struct 
 {
 	//Alright so we are going to have a byte pointer and the current chunk that we are in.
 	char *Cursor;
 	char *EndOfFile;
-};
+} wav_file_cursor;
 
 #pragma pack(push, 1)
-struct bitmap_header
+typedef struct 
 {
 	unsigned short FileType;     /* File type, always 4D42h ("BM") */
 	unsigned int FileSize;     /* Size of the file in bytes */
@@ -55,14 +55,14 @@ struct bitmap_header
 	int Height;          /* Image height in pixels */
 	unsigned short Planes;          /* Number of color planes */
 	unsigned short BitsPerPixel;    /* Number of bits per pixel */
-};
+} bitmap_header;
 #pragma pack(pop)
 
-struct debug_read_file_result
+typedef struct 
 {
 	void *Contents;
 	int ContentSize;
-};
+} debug_read_file_result;
 
 #define DEBUG_PLATFORM_READ_ENTIRE_FILE(name) debug_read_file_result name(char *FileName)
 typedef DEBUG_PLATFORM_READ_ENTIRE_FILE(debug_platform_read_entire_file);
@@ -73,29 +73,29 @@ typedef DEBUG_PLATFORM_FREE_FILE_MEMORY(debug_platform_free_file_memory);
 #define DEBUG_PLATFORM_WRITE_ENTIRE_FILE(name) int name(char *FileName, int MemorySize, void *Memory)
 typedef DEBUG_PLATFORM_WRITE_ENTIRE_FILE(debug_platform_write_entire_file);
 
-struct loaded_wav
+typedef struct 
 {
 	int SampleCount;
 	int Channels;
 	short *SampleData[2];
-};
+} loaded_wav;
 
-struct asset_header
+typedef struct 
 {
 	unsigned int HeaderCode;
 	unsigned int OffsetBytes; //from start of file to end of header
 	unsigned int NextChunkSize; //size in bytes of next chunk.
-};
+} asset_header;
 
-struct loaded_asset
+typedef struct 
 {
 	unsigned char *RawData; //I guess we can interpret the raw data on integer boundaries.
 	asset_header Headers[16]; //For now we support a maximum of 16 headers.
 	unsigned int HeaderCount;
 	unsigned int AssetSize;
-};
+} loaded_asset;
 
-struct pokemon_database_data
+typedef struct 
 {
 	unsigned int NationalDexID;
 	char Name[16];
@@ -112,21 +112,21 @@ struct pokemon_database_data
 	unsigned int EvYeilds[6];
 	unsigned int BaseStats[6];
 	unsigned int BaseFriendship;
-}; 
+} pokemon_database_data; 
 
-struct save_game
+typedef struct 
 {
 	entity PlayerEntity;
 	entity_npc Player;
 	pokemon PokemonParty;
-};
+} save_game;
 
 #define TILE_CHUNKS 10
 
 //below is the world save and it stores all the tiles!
-struct save_world
+typedef struct 
 {
 	unsigned int ChunkCount;
 	vector3 ChunkPos[TILE_CHUNKS]; //positions for chunks 
 	unsigned int Chunks[TILE_CHUNKS][16][16]; //acutal chunks
-};
+} save_world;
