@@ -83,7 +83,11 @@ AudioStream stream;
 
 // Set the size of each buffer in the double buffer to be 1920 samples. This gives us 40ms delay (w/ 48kHz) between the write cursor and the play cursor.
 // At 30 FPS, 33ms / frame, this should be feasible with no audio breaks.
+#ifdef PLATFORM_DESKTOP
 #define SOUND_BUFFER_SAMPLES 1920
+#else
+#define SOUND_BUFFER_SAMPLES 4096
+#endif
 //-------------------------
 
 //------------------
@@ -91,6 +95,11 @@ Texture2D backbuffer = {};
 //-----------------
 
 #define FRAME_RATE 60
+
+// ----------------------------data structures for recording input and playback
+unsigned int inputPlayingIndex = 0;
+// ----------------------------
+
 
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
@@ -189,11 +198,15 @@ int main(void)
         gameOffscreenBuffer.pitch = width * gameOffscreenBuffer.BytesPerPixel;
         gameOffscreenBuffer.memory = MemAlloc(width * height * gameOffscreenBuffer.BytesPerPixel);
         
+#ifdef PLATFORM_DESKTOP
         backbuffer.id = rlLoadTexture(gameOffscreenBuffer.memory, width, height, format, mipmaps);
         backbuffer.width = screenWidth;
         backbuffer.height = screenHeight;
         backbuffer.format = format;
         backbuffer.mipmaps = mipmaps;
+#else
+        backbuffer = LoadTexture("Data//backbuffer.png");
+#endif
     }
     
     // Initialize the game user input
@@ -305,10 +318,15 @@ void UpdateDrawFrame(void)
                 RaylibProcessInput(&PREV_gameUserInput.GamepadInput[1].DebugButtons[0],&gameUserInput.GamepadInput[1].DebugButtons[0],IsKeyDown(KEY_F));
                 
                 RaylibProcessInput(&PREV_gameUserInput.GamepadInput[1].DebugButtons[1],&gameUserInput.GamepadInput[1].DebugButtons[1],IsKeyDown(KEY_Z));
+                
+                if (IsKeyDown(KEY_L))
+                {
+                    // TODO: Implement recording feature as seen in win32 version.
+                }
             }
             
             // Process the controller
-            /*
+            
             if (IsGamepadAvailable(GAMEPAD_PLAYER1))
             {
                 game_user_gamepad_input *prevc = &PREV_gameUserInput.GamepadInput[0];
@@ -334,12 +352,14 @@ void UpdateDrawFrame(void)
                 {
                     float axisRightX = GetGamepadAxisMovement(GAMEPAD_PLAYER1, 0);
                     
+                    float axisRightY = GetGamepadAxisMovement(GAMEPAD_PLAYER1, 1);
+                    
                     if (axisRightX > 0.2f) // deadzone
                     {
                         RaylibProcessInput(&prevc->Right, &c->Right, true);
                         RaylibProcessInput(&prevc->Left, &c->Left, false);
                     }
-                    else if (axisRightX < 0.2f)
+                    else if (axisRightX < -0.2f)
                     {
                         RaylibProcessInput(&prevc->Left, &c->Left, true);
                         RaylibProcessInput(&prevc->Right, &c->Right, false);
@@ -348,9 +368,23 @@ void UpdateDrawFrame(void)
                         RaylibProcessInput(&prevc->Right, &c->Right, false);
                         RaylibProcessInput(&prevc->Left, &c->Left, false);
                     }
+                    
+                    if (axisRightY > 0.2f) // deadzone
+                    {
+                        RaylibProcessInput(&prevc->Up, &c->Up, true);
+                        RaylibProcessInput(&prevc->Down, &c->Down, false);
+                    }
+                    else if (axisRightY < -0.2f)
+                    {
+                        RaylibProcessInput(&prevc->Down, &c->Down, true);
+                        RaylibProcessInput(&prevc->Up, &c->Up, false);
+                    } else
+                    {
+                        RaylibProcessInput(&prevc->Up, &c->Up, false);
+                        RaylibProcessInput(&prevc->Down, &c->Down, false);
+                    }
                 }
             }
-            */
         }
     } // done updating input
     

@@ -15,6 +15,9 @@ Misc:
 - Camera fade effect
 - Health Bar is blue tho... :(
 - Overall bad depth features
+- Collision w/ NPC is not to my liking!
+- Player 2 has no thud sound
+- Player 2 doesn't do proper layering with other NPC, only player 1.
 
 Optimization
 - Game lags from time to time
@@ -24,25 +27,11 @@ Optimization
 
 Bugs / Must do
 
- Player Movement system:
-- Player appears over player 2
--      soln: alter when to render the NPC relative to the player based on the reative pos of the entity. (the y pos)
-
-- Need to test what's going on with player 2 movement!
-- The whole walkable thing is really fucking with the mans!
-
-Idea: Move player, walkable for all other npc false
-Then move player 2, walkable for all other npc false ()
-
-Then make sure to set player 1 and player 2 tiles walkable again for the next frame.
--------------------------
-
 Raylib mods and the such:
 - Raylib gamepad support is iffy
 - Seems like chrome creates a virtual gamepad, raylib can read this. So gamepad support is fine on the web, ironically.
 - Gamepad support on windows is iffy w/ raylib however. My gamepad support for Pokemon Demo is better.
 
-- Recording feature not built into raylib layer
 --------------------------
 
 */
@@ -1208,27 +1197,33 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     }
                     
                     //Initialize some specs about the player's bounding box
-                    float PLayerHeight = TileMap->TileSizeInMeters;
-                    float PlayerWidth = 0.75f * PLayerHeight;
+                    float PlayerHeight = TileMap->TileSizeInMeters;
+                    float PlayerWidth = 0.75f * PlayerHeight;
                     tile_map NewTileMap = *TileMap;
                     
-                    // below is the code to overwrite the walkablity of the tilemap based on the entities
+                    // unfreeze player
+                    {
+                        entity Entity = *GameState->Player->Entity;
+                        unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                                          Entity.TileMapPos.AbsTileZ);
+                        Tile.Walkable = true;
+                        SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                Entity.TileMapPos.AbsTileZ, Tile);
+                    }
+                    
+                    // Freeze all npc so that the player can move
                     for (unsigned int x = 0; x < GameState->EntityCount; x++)
                     {
                         entity Entity = GameState->AllEntities[x];
                         
-                        // NOTE: All entities are walkable unless they are an NPC!
-                        if (Entity.npc != NULL)
+                        // NOTE: Can walk on all entities unless they are an NPC!
+                        if (Entity.npc != NULL && Entity.npc != GameState->Player)
                         {
-                            // Ignore the player and last player entities
-                            if (Entity.npc != GameState->Player)
-                            {
-                                unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
-                                                                  Entity.TileMapPos.AbsTileZ);
-                                Tile.Walkable = false;
-                                SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
-                                        Entity.TileMapPos.AbsTileZ, Tile);
-                            }
+                            unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                                              Entity.TileMapPos.AbsTileZ);
+                            Tile.Walkable = false;
+                            SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                    Entity.TileMapPos.AbsTileZ, Tile);
                         }
                     }
                     
@@ -1248,32 +1243,58 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     GameState->Player->Entity->TileMapPos = QueryNewTileMapPos(&NewTileMap, GameState->Player->Entity->TileMapPos,
                                                                                NewPlayerP, GameState->Player->MoveDirection, 0.5f * PlayerWidth);
                     
+                    // unfreeze player 2
+                    {
+                        entity Entity = GameState->AllEntities[0];
+                        unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                                          Entity.TileMapPos.AbsTileZ);
+                        Tile.Walkable = true;
+                        SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                Entity.TileMapPos.AbsTileZ, Tile);
+                    }
+                    
+                    // Freeze all npc so that the player2 can move
+                    for (unsigned int x = 0; x < GameState->EntityCount; x++)
+                    {
+                        entity Entity = GameState->AllEntities[x];
+                        
+                        // NOTE: Can walk on all entities unless they are an NPC!
+                        if (Entity.npc != NULL && Entity.npc != GameState->AllEntities[0].npc)
+                        {
+                            unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                                              Entity.TileMapPos.AbsTileZ);
+                            Tile.Walkable = false;
+                            SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                                    Entity.TileMapPos.AbsTileZ, Tile);
+                        }
+                    }
+                    
+                    // move player 2
+                    {
+                        // the second player
+                        entity_npc *PlayerTwo = GameState->AllEntities[0].npc;
+                        
+                        tile_map_position Player2P = PlayerTwo->Entity->TileMapPos;
+                        tile_map_position NewPlayer2P = Player2P;
+                        NewPlayer2P.X = Player2P.X + Input->DeltaTime * dPlayer2X;
+                        NewPlayer2P.Y = Player2P.Y + Input->DeltaTime * dPlayer2Y;		
+                        NewPlayer2P = ReCalcTileMapPosition(TileMap, NewPlayer2P);
+                        
+                        //Below we actually ask the tile system to calculate our new tile position
+                        PlayerTwo->Entity->TileMapPos = QueryNewTileMapPos(TileMap, PlayerTwo->Entity->TileMapPos,
+                                                                           NewPlayer2P, PlayerTwo->MoveDirection, 0.5f * PlayerWidth);
+                    }
+                    
                     vector2f PlayerPos = {}; 
                     PlayerPos.X = GameState->Player->Entity->TileMapPos.AbsTileX * TileSizeInPixels + 
                         GameState->Player->Entity->TileMapPos.X * MetersToPixels;
                     PlayerPos.Y = GameState->Player->Entity->TileMapPos.AbsTileY * TileSizeInPixels + 
                         GameState->Player->Entity->TileMapPos.Y * MetersToPixels;
                     
+                    
+                    
                     // TODO: Is the camera operating in pixel space?
                     GameState->CameraPos = Lerp2f(GameState->CameraPos, PlayerPos, 0.9f * Input->DeltaTime);
-                    
-                    // NOTE: In the event that one of the NPC moves next frame, we must ensure that the tiles set walkable=false for this frame are reset!
-                    
-                    /*
-                    for (unsigned int x = 1; x < GameState->EntityCount; x++)
-                    {
-                        entity Entity = GameState->AllEntities[x];
-                        
-                        // NOTE: All entities are walkable unless they are an NPC!
-                        if (Entity.npc != NULL)
-                        {
-                            unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
-                                                              Entity.TileMapPos.AbsTileZ);
-                            Tile.Walkable = true;
-                            SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
-                                    Entity.TileMapPos.AbsTileZ, Tile);
-                        }
-                    }*/
                     
                     
                     if ( GameState->ThudLastFrame && ( (NewPlayerP.AbsTileX != GameState->LastThudTile.x) |
@@ -1289,22 +1310,6 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         PlaySoundEffect(GameState, GameState->SoundEffects[5], false, 1.0f);
                         GameState->ThudLastFrame = true;
                         GameState->LastThudTile.x = NewPlayerP.AbsTileX; GameState->LastThudTile.y = NewPlayerP.AbsTileY;
-                    }
-                    
-                    // below is the code for player 2
-                    {
-                        // the second player
-                        entity_npc *PlayerTwo = GameState->AllEntities[0].npc;
-                        
-                        tile_map_position Player2P = PlayerTwo->Entity->TileMapPos;
-                        tile_map_position NewPlayer2P = Player2P;
-                        NewPlayer2P.X = Player2P.X + Input->DeltaTime * dPlayer2X;
-                        NewPlayer2P.Y = Player2P.Y + Input->DeltaTime * dPlayer2Y;		
-                        NewPlayer2P = ReCalcTileMapPosition(TileMap, NewPlayer2P);
-                        
-                        //Below we actually ask the tile system to calculate our new tile position
-                        PlayerTwo->Entity->TileMapPos = QueryNewTileMapPos(TileMap, PlayerTwo->Entity->TileMapPos,
-                                                                           NewPlayer2P, PlayerTwo->MoveDirection, 0.5f * PlayerWidth);
                     }
                     
                     render_queue RenderQueue = {};
@@ -1425,17 +1430,63 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         }
                     }
                     
-                    // Draw the NPC's
-                    for (unsigned int x = 0; x < GameState->EntityCount; x++)
+                    /* 
+Smart system for drawing the NPC's
+                    and the player with proper layering.
+                    */
                     {
-                        entity Entity = GameState->AllEntities[x];
+                        unsigned int delay_NPC_Count = 0;
+                        entity_npc entity_npc_buf[MAX_ENTITIES];
                         
-                        if (Entity.npc != NULL)
+                        // Draw the NPC's
+                        for (unsigned int x = 0; x < GameState->EntityCount; x++)
                         {
-                            entity_npc *currentNPC = Entity.npc;
+                            entity Entity = GameState->AllEntities[x];
                             
-                            //float X = CenterX + Entity.Pos.X - GameState->CameraPos.X;
-                            //float Y = CenterY - Entity.Pos.Y + GameState->CameraPos.Y;
+                            // is an npc and not the player
+                            if (Entity.npc != NULL && Entity.npc != GameState->Player)
+                            {
+                                entity_npc *currentNPC = Entity.npc;
+                                
+                                // Check if rendering should NOT be postponed (render above player)
+                                if (Entity.TileMapPos.AbsTileY >= GameState->Player->Entity->TileMapPos.AbsTileY)
+                                {
+                                    // if the player is below the NPC (in world space), render the NPC
+                                    
+                                    float X = Entity.TileMapPos.AbsTileX * TileSizeInPixels + 
+                                        Entity.TileMapPos.X * MetersToPixels + CenterX - GameState->CameraPos.X;
+                                    
+                                    float Y = -1.0f * Entity.TileMapPos.AbsTileY * TileSizeInPixels - 
+                                        Entity.TileMapPos.Y * MetersToPixels + CenterY + GameState->CameraPos.Y;
+                                    
+                                    vector2f ScreenPos2 = {}; ScreenPos2.X = X; ScreenPos2.Y = Y;
+                                    
+                                    DrawNPC(buffer, currentNPC, ScreenPos2);
+                                }
+                                else
+                                {
+                                    // postpone the rendering until after the player
+                                    entity_npc_buf[delay_NPC_Count++] = *currentNPC;
+                                }
+                            }
+                        }
+                        
+                        // render the player
+                        float X = GameState->Player->Entity->TileMapPos.AbsTileX * TileSizeInPixels + 
+                            GameState->Player->Entity->TileMapPos.X * MetersToPixels + CenterX - GameState->CameraPos.X;
+                        
+                        float Y = -1.0f * GameState->Player->Entity->TileMapPos.AbsTileY * TileSizeInPixels - 
+                            GameState->Player->Entity->TileMapPos.Y * MetersToPixels + CenterY + GameState->CameraPos.Y;
+                        
+                        vector2f ScreenPos2 = {}; ScreenPos2.X = X; ScreenPos2.Y = Y;
+                        
+                        DrawNPC(buffer, GameState->Player, ScreenPos2);
+                        
+                        // render the postponed NPC's
+                        for (unsigned int i = 0; i < delay_NPC_Count; i++)
+                        {
+                            entity Entity = *entity_npc_buf[i].Entity;
+                            entity_npc *currentNPC = Entity.npc;
                             
                             float X = Entity.TileMapPos.AbsTileX * TileSizeInPixels + 
                                 Entity.TileMapPos.X * MetersToPixels + CenterX - GameState->CameraPos.X;
@@ -1449,18 +1500,8 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         }
                     }
                     
-                    //draw player
                     
-                    /*{
-                        vector2f ScreenPos = {}; 
-                        ScreenPos.X = GameState->Player->Entity->TileMapPos.AbsTileX * TileSizeInPixels + 
-                            GameState->Player->Entity->TileMapPos.X * MetersToPixels + CenterX - GameState->CameraPos.X;
-                        ScreenPos.Y = -1.0f * GameState->Player->Entity->TileMapPos.AbsTileY * TileSizeInPixels - 
-                            GameState->Player->Entity->TileMapPos.Y * MetersToPixels + CenterY + GameState->CameraPos.Y;
-                        DrawNPC(buffer, GameState->Player, ScreenPos);
-                    }*/
-                    
-                    //draw any items that were posponed!
+                    //draw any tiles that were posponed!
                     DrawRenderQueueItems(buffer, &RenderQueue);
                     
                     //if the player stepped onto a new tile!
