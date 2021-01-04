@@ -375,36 +375,36 @@ internal void ExecuteTurn(game_state *GameState, battle_pokemon *Attacker, battl
 			GameCatStrings(Attacker->Pokemon->Nickname," used ", StringBuffer);
 			GameCatStrings(StringBuffer, PokemonMove->Name, StringBuffer); 
 			CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y,
-                             GameCatStrings(StringBuffer, "!", StringBuffer), 0, NULL_GAME_FUNCTION);
+                             GameCatStrings(StringBuffer, "!", StringBuffer), 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
             
 			if ( Flags & SUPEREFFECTIVE )
 			{
-				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "It was super effective!", 0, NULL_GAME_FUNCTION);
+				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "It was super effective!", 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
 			}
 			else if (Flags & NOTVERYEFFECTIVE)
 			{
-				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "It was not very effective!",0, NULL_GAME_FUNCTION);
+				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "It was not very effective!",0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
 			}
 			else if (Flags & NOTEFFECTIVE)
 			{
-				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "It had no effect!", 0, NULL_GAME_FUNCTION);
+				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "It had no effect!", 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
 			}
             
 			if ( (Flags & CRITICAL) && !(Flags & NOTEFFECTIVE) )
 			{
-				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "It was a critical hit!", 0, NULL_GAME_FUNCTION);
+				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "It was a critical hit!", 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
 			}
 		}
 		else
 		{
 			GameCatStrings(Attacker->Pokemon->Nickname," used ", StringBuffer);
 			GameCatStrings(StringBuffer, PokemonMove->Name, StringBuffer); 
-			CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, GameCatStrings(StringBuffer, "!", StringBuffer), 0, NULL_GAME_FUNCTION);
+			CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, GameCatStrings(StringBuffer, "!", StringBuffer), 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
             
 			//the move is a status move so do status things!
 			if ( ApplyEffect(GameState->PokemonDatabase, Attacker, Target, *PokemonMove, StringBuffer) )
 			{
-				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, StringBuffer, 0, NULL_GAME_FUNCTION);
+				CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, StringBuffer, 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
 			}					
 		}
 		SafeSubtract(PokemonMove->PP,1);					
@@ -412,7 +412,7 @@ internal void ExecuteTurn(game_state *GameState, battle_pokemon *Attacker, battl
 	else
 	{
 		CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, 
-                         GameCatStrings(Attacker->Pokemon->Nickname, " missed!", StringBuffer), 0, NULL_GAME_FUNCTION);
+                         GameCatStrings(Attacker->Pokemon->Nickname, " missed!", StringBuffer), 0, NULL_GAME_FUNCTION, NULL_PLAYER,NULL_PLAYER);
 	}
 }
 
@@ -445,12 +445,12 @@ internal void OnPokemonFainted(game_state *GameState, game_screen_position Scree
 		game_posponed_function Function = {}; Function.Function = KillSoundThenPlay; Function.Data = GameState; 
 		Function.Param = 8;
 		CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y,
-                         GameCatStrings(TargetPokemon->Nickname," fainted!", StringBuffer), 0, Function);
+                         GameCatStrings(TargetPokemon->Nickname," fainted!", StringBuffer), 0, Function, NULL_PLAYER, NULL_PLAYER);
 	}
 	else
 	{
 		CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y,
-                         GameCatStrings(TargetPokemon->Nickname," fainted!", StringBuffer), 0, NULL_GAME_FUNCTION);
+                         GameCatStrings(TargetPokemon->Nickname," fainted!", StringBuffer), 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
 	}
 	
 	if (Won)
@@ -468,11 +468,11 @@ internal void OnPokemonFainted(game_state *GameState, game_screen_position Scree
 		game_posponed_function Function = {}; Function.Function = PlaySoundEffectBare; Function.Data = GameState; 
 		Function.Param = 9;
 		CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, 
-                         GameCatStrings(NewMessage, " experience points!", NewMessage), 0, Function);
+                         GameCatStrings(NewMessage, " experience points!", NewMessage), 0, Function, NULL_PLAYER, NULL_PLAYER);
 	} 
     
 	if (!Won)
 	{
-		CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "Red blacked out!", 0, NULL_GAME_FUNCTION);
+		CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y, "Red blacked out!", 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
 	}
 }

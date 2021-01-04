@@ -3,20 +3,28 @@
 TODO:
 
 Misc:
+- Player 2 cannot start the game (win32 version)
 
-- Make final tile map edit
+
 
 
 Must do:
-- Add the following characters to the font
--    " : ) -
+
+- Trying to control a character when in battle does not work!
+-          or maybe it is just during shader run
+- Make final tile map edit
 - Player 2 has no thud sound
 -          thud logic is bad and can use improvement anyway
 - Player 2 cannot interact with anything at all
-- Player 2 cannot start the game
+
 - Game feel w.r.t to the player
 - Shaders could be better
--       LUT that exits battle
+-       LUT that exits MAINbattle
+
+
+A few concerns with two players and the messages and stuf!
+
+
 
 
 MESSAGE AND FONT STUFFS
@@ -615,7 +623,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     float ExtensionHeight = GameState->DEBUGAttackBackground.Height * 2.0f;
                     GameCatStrings("Go! ", GameState->PokemonB1.Pokemon->Nickname, StringBuffer);
                     CreateNewMessage(GameState, CenterX, CenterY + GameState->BattleBackground.Height - ExtensionHeight / 2.0f,
-                                     GameCatStrings(StringBuffer, "!", StringBuffer), 0, NULL_GAME_FUNCTION);
+                                     GameCatStrings(StringBuffer, "!", StringBuffer), 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
                     
                     GameState->GameState = BATTLE;
                     GameState->StateFlags = ATTACKMENU;
@@ -746,7 +754,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                                     unsigned int DeltaSpeed = GameState->PokemonBackBuffer[0]->Speed - LastBattlePokemon.Speed;
                                     
                                     CreateNewMessage(GameState, CenterX, CanvasMaxY,
-                                                     GameCatStrings(GameState->PokemonBackBuffer[0]->Pokemon->Nickname," leveled up!", StringBuffer), 0, NULL_GAME_FUNCTION);
+                                                     GameCatStrings(GameState->PokemonBackBuffer[0]->Pokemon->Nickname," leveled up!", StringBuffer), 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
                                     PlaySoundEffect(GameState, GameState->SoundEffects[0], false, 1.0f);
                                     
                                     GameState->UserInterfaces[0].Active = true;
@@ -986,7 +994,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                             else
                             {
                                 CreateNewMessage(GameState, CenterX, CanvasMaxY,
-                                                 "That move hasn't any PP left! Why you're a royal dumbass aren't you? ", 0, NULL_GAME_FUNCTION);
+                                                 "No PP LEFT! You're in trouble.", 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
                             }
                             
                         }
@@ -1003,7 +1011,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 }break;
                 case BLACKEDOUT:
                 {
-                    CreateNewMessage(GameState, CenterX, CenterY, "Luckily, someone found you and brought you to the nearest pokemon center.", 0, NULL_GAME_FUNCTION);
+                    CreateNewMessage(GameState, CenterX, CenterY, "Luckily, someone found you and brought you to the nearest pokemon center.", 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
                     game_posponed_function PosponedFunction = {}; PosponedFunction.Data = GameState; PosponedFunction.Function = BlackOut;
                     PosponeSuperFunction(GameState, 4.0f, PosponedFunction);
                     GameState->GameState = CHILLING;
@@ -1034,15 +1042,56 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     {
                         entity *EntityAhead = GetEntityAhead(TileMap, GameState, GameState->Player);
                         
-#if POKEMON_DEMO_DEBUG
-                        //char epic_buffer[256];
-                        //int isEntityAhead = (EntityAhead == NULL) ? 0 : 1;
-                        //if (isEntityAhead)
-                        //printf("entity_ahead!\n");
-#endif
+                        entity *EntityAhead_p2 = GetEntityAhead(TileMap, GameState, GameState->AllEntities[0].npc);
+                        
+                        if (EntityAhead_p2 != NULL && !EntityAhead_p2->WalkOnEvent)
+                        {
+                            // Player 2 any button down
+                            if (Controller->DebugButtons[1].EndedDown && Controller->DebugButtons[1].HalfTransitionCount > 0)
+                            {
+                                // check if the entity blits messages
+                                if (EntityAhead_p2->Message[0])
+                                {
+                                    CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead_p2->Message, OVERRIDEWAIT, NULL_GAME_FUNCTION, GameState->AllEntities[0].npc, EntityAhead_p2->npc);
+                                }
+                                
+                                // Check if the entity has a super function?
+                                // Check for not arceus but there is still an event 
+                                if (EntityAhead_p2->Function.Function && !StringEquals(EntityAhead_p2->Message, "Dodogyuuun!"))
+                                {
+                                    GameState->FunctionQueue.Functions[GameState->FunctionQueue.Count++] = EntityAhead_p2->Function;
+                                }
+                                
+                                // Is entity an NPC?
+                                // Make the NPC face player 2 when they interact with player 2.
+                                if (EntityAhead_p2->npc != NULL)
+                                {
+                                    entity_npc *EntityAheadNPC = EntityAhead_p2->npc;
+                                    entity_npc *Player2 = GameState->AllEntities[0].npc;
+                                    
+                                    if (Player2->MoveDirection == UP)
+                                    {
+                                        EntityAheadNPC->MoveDirection = DOWN; 
+                                    }
+                                    else if (Player2->MoveDirection == DOWN)
+                                    {
+                                        EntityAheadNPC->MoveDirection = UP;
+                                    }
+                                    else if (Player2->MoveDirection == LEFT)
+                                    {
+                                        EntityAheadNPC->MoveDirection = RIGHT;
+                                    }
+                                    else if (Player2->MoveDirection == RIGHT)
+                                    {
+                                        EntityAheadNPC->MoveDirection = LEFT;
+                                    }
+                                }
+                            }
+                        }
                         
                         if (EntityAhead != NULL) //so provided there is an entity ahead of us lets do some processing
                         {
+                            // TODO(Noah): Actually make a walk on event.
                             if (!EntityAhead->WalkOnEvent)
                             {
                                 // get button down (previously up)
@@ -1051,7 +1100,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                                     // check if the entity blits messages
                                     if (EntityAhead->Message[0])
                                     {
-                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, NULL_GAME_FUNCTION);
+                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, NULL_GAME_FUNCTION, GameState->Player, EntityAhead->npc);
                                     }
                                     
                                     
@@ -1109,7 +1158,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                                 {
                                     if (EntityAhead->Message[0])
                                     {
-                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, NULL_GAME_FUNCTION);
+                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, NULL_GAME_FUNCTION, GameState->Player, NULL_PLAYER);
                                     }
                                     
                                     if (EntityAhead->Function.Function)
@@ -1119,37 +1168,20 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                                 }
                             } // end of if (!walkon event)
                         } // end of processing entity ahead
-                        
-                        
-                        // move the player acording to input 
-                        // NOTE: If there is a message blitting, the player cannot move. That's why this code is here.
-                        if (Keyboard->Up.EndedDown)
-                        {
-                            dPlayerY += PlayerSpeed;
-                            GameState->Player->MoveDirection = UP;
-                        }
-                        else if (Keyboard->Down.EndedDown)
-                        {
-                            dPlayerY -= PlayerSpeed;
-                            GameState->Player->MoveDirection = DOWN;
-                        }
-                        else if (Keyboard->Left.EndedDown)
-                        {
-                            dPlayerX -= PlayerSpeed;
-                            GameState->Player->MoveDirection = LEFT;
-                        }
-                        else if (Keyboard->Right.EndedDown)
-                        {
-                            dPlayerX += PlayerSpeed;
-                            GameState->Player->MoveDirection = RIGHT;
-                        }
                     }
                     else // we are blitting a message!
                     {
-                        // user presses button to "skip" the message
-                        if (Keyboard->DebugButtons[1].EndedDown && Keyboard->DebugButtons[1].HalfTransitionCount > 0)
+                        bool user1_act = Keyboard->DebugButtons[1].EndedDown && Keyboard->DebugButtons[1].HalfTransitionCount > 0;
+                        
+                        bool user2_act = Controller->DebugButtons[1].EndedDown && Controller->DebugButtons[1].HalfTransitionCount > 0;
+                        
+                        game_message currentMessage = GameState->MessageQueue.Messages[0];
+                        
+                        // user (correct user) presses button to "skip" the message
+                        if ( (currentMessage.initiator == GameState->Player && user1_act) || (currentMessage.initiator == GameState->AllEntities[0].npc && user2_act) )
                         {
                             PlaySoundEffect(GameState, GameState->SoundEffects[1], false, 1.0f);
+                            
                             //kill the first message in the queue, because FIFO
                             PopMessage(&GameState->MessageQueue, 0); 
                             game_posponed_function PosponedFunction = {}; PosponedFunction.Data = &GameState->FunctionQueue; 
@@ -1159,34 +1191,82 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         
                     }
                     
-                    // NOTE: The controller controls player 2, the keyboard controls player 1. The camera follows player 1, and player 2 is technically an NPC.
+                    // NOTE: Player movement code and appropriate blocking according to state of current message, if any
                     {
+                        bool should_player1_move = true;
+                        bool should_player2_move = true;
+                        
+                        if (GameState->MessageQueue.Count != 0)
+                        {
+                            game_message currentMessage = GameState->MessageQueue.Messages[0];
+                            
+                            if (GameState->Player == currentMessage.speaker || GameState->Player == currentMessage.initiator)
+                            {
+                                should_player1_move = false;
+                            }
+                            
+                            entity_npc *player2 = GameState->AllEntities[0].npc;
+                            
+                            if (player2 == currentMessage.speaker || player2 == currentMessage.initiator)
+                            {
+                                should_player2_move = false;
+                            }
+                        }
+                        
+                        // the first player
+                        if (should_player1_move)
+                        {
+                            if (Keyboard->Up.EndedDown)
+                            {
+                                dPlayerY += PlayerSpeed;
+                                GameState->Player->MoveDirection = UP;
+                            }
+                            else if (Keyboard->Down.EndedDown)
+                            {
+                                dPlayerY -= PlayerSpeed;
+                                GameState->Player->MoveDirection = DOWN;
+                            }
+                            else if (Keyboard->Left.EndedDown)
+                            {
+                                dPlayerX -= PlayerSpeed;
+                                GameState->Player->MoveDirection = LEFT;
+                            }
+                            else if (Keyboard->Right.EndedDown)
+                            {
+                                dPlayerX += PlayerSpeed;
+                                GameState->Player->MoveDirection = RIGHT;
+                            }
+                        }
+                        
                         // the second player
                         entity_npc *PlayerTwo = GameState->AllEntities[0].npc;
                         
-                        if (Controller->Down.EndedDown)
+                        if (should_player2_move)
                         {
-                            dPlayer2Y += PlayerSpeed;
-                            PlayerTwo->MoveDirection = UP;
-                            //GameState->CameraPos.Y -= Input->DeltaTime * 20.0f; 
-                        }
-                        else if (Controller->Up.EndedDown)
-                        {
-                            dPlayer2Y -= PlayerSpeed;
-                            PlayerTwo->MoveDirection = DOWN;
-                            //GameState->CameraPos.Y += Input->DeltaTime * 20.0f;
-                        }
-                        else if (Controller->Left.EndedDown)
-                        {
-                            dPlayer2X -= PlayerSpeed;
-                            PlayerTwo->MoveDirection = LEFT;
-                            //GameState->CameraPos.X -= Input->DeltaTime * 20.0f;
-                        }
-                        else if (Controller->Right.EndedDown)
-                        {
-                            dPlayer2X += PlayerSpeed;
-                            PlayerTwo->MoveDirection = RIGHT;
-                            //GameState->CameraPos.X += Input->DeltaTime * 20.0f;
+                            if (Controller->Down.EndedDown)
+                            {
+                                dPlayer2Y += PlayerSpeed;
+                                PlayerTwo->MoveDirection = UP;
+                                //GameState->CameraPos.Y -= Input->DeltaTime * 20.0f; 
+                            }
+                            else if (Controller->Up.EndedDown)
+                            {
+                                dPlayer2Y -= PlayerSpeed;
+                                PlayerTwo->MoveDirection = DOWN;
+                                //GameState->CameraPos.Y += Input->DeltaTime * 20.0f;
+                            }
+                            else if (Controller->Left.EndedDown)
+                            {
+                                dPlayer2X -= PlayerSpeed;
+                                PlayerTwo->MoveDirection = LEFT;
+                                //GameState->CameraPos.X -= Input->DeltaTime * 20.0f;
+                            }
+                            else if (Controller->Right.EndedDown)
+                            {
+                                dPlayer2X += PlayerSpeed;
+                                PlayerTwo->MoveDirection = RIGHT;
+                                //GameState->CameraPos.X += Input->DeltaTime * 20.0f;
+                            }
                         }
                     }
                     

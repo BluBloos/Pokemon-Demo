@@ -39,6 +39,7 @@ typedef double real64;
 #define PushArray(Arena, Count, type) (type *)PushSize( Arena, (Count) * (sizeof(type)) )
 
 #define NULL 0
+#define NULL_PLAYER NULL
 
 // NOTE: that in reading the enumerations,
 // left -> right corresponds to low order -> high order
@@ -412,11 +413,16 @@ typedef struct
 
 typedef struct 
 {
-	float BoxX; float BoxY; //x is center of text box and y is top of text box
-	char String[256]; //the message to display
+    // who the messaage is adressed to
+    entity_npc *initiator;
+    // who is saying the message
+    entity_npc *speaker;
+	
+    float BoxX; float BoxY; // x is center of text box and y is top of text box
+	char String[256]; // the message to display
 	unsigned int CurrentLength;
-	float MaxY; float MinY; float MaxX; float MinX; //the bounds
-	int Flags; //any message flags
+	float MaxY; float MinY; float MaxX; float MinX; // the bounds
+	int Flags; // any message flags
 	game_posponed_function Function;
 } game_message;
 
@@ -733,8 +739,8 @@ internal void CreateNewMessage(game_state *GameState, float PosX, float PosY, ch
 }
 */
 
-internal void CreateNewMessage(game_state *GameState, float PosX, float PosY, char *String, unsigned int OverflowFlags, 
-                               game_posponed_function Function)
+internal void CreateNewMessage(game_state *GameState, float PosX, float PosY, char *String, unsigned int OverflowFlags,
+                               game_posponed_function Function, entity_npc *initiator, entity_npc *speaker)
 {
     game_message *Message = &GameState->MessageQueue.Messages[GameState->MessageQueue.Count++];
 	
@@ -742,7 +748,9 @@ internal void CreateNewMessage(game_state *GameState, float PosX, float PosY, ch
     PokeZeroMem(*Message);
 	
 	loaded_bitmap Menu = GameState->DEBUGAttackBackground;
-	Message->BoxX = PosX;
+	Message->initiator = initiator;
+    Message->speaker = speaker;
+    Message->BoxX = PosX;
 	Message->BoxY = PosY;
 	float Padding = 20.0f; //NOTE: All default messages have a 40.0 pixel padding.
 	Message->MinX = PosX - Menu.Width * Menu.Scale / 2.0f + Padding;

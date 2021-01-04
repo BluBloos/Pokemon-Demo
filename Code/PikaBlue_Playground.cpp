@@ -747,7 +747,7 @@ internal void HealPokemon2(void *Data, unsigned int Param)
 	game_state *GameState = (game_state *)Data;
     
 	CreateNewMessage(GameState, 640.0f, 460.0f,
-                     "Your pokemon were restored to full health!", OVERRIDEWAIT, NULL_GAME_FUNCTION);
+                     "Your pokemon were restored to full health!", OVERRIDEWAIT, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
 }
 
 //this doesn't belong here
