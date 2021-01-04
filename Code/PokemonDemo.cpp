@@ -15,7 +15,9 @@ Must do:
 - Make final tile map edit
 - Player 2 has no thud sound
 -          thud logic is bad and can use improvement anyway
-- Player 2 cannot interact with anything at all
+
+
+- Interaction w/ mum is odd
 
 - Game feel w.r.t to the player
 - Shaders could be better
@@ -402,6 +404,8 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 //LoadSaveGame(Memory->DEBUGPlatformReadEntireFile, GameState, GameCatStrings(Input->BaseFilePath, "Data\\SaveData.sav", StringBuffer));
                 
                 GameState->Player->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 1, 6);
+                
+                CloneString("You found the first easter egg! Try to find the other...if you can!", GameState->Player->Entity->Message, 256); 
             }
             
             
