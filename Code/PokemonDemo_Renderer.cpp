@@ -563,6 +563,7 @@ internal void BlitStringBoundless(game_offscreen_buffer *buffer, loaded_bitmap *
     }
 }
 
+/* If you are to implement word wrapping, here is where. */
 internal void BlitStringBounds(game_offscreen_buffer *buffer, loaded_bitmap *PikaBlueFont,
                                float MinX, float MaxX, float MinY, float MaxY, char *String, int Length, int Invert)
 {
@@ -572,17 +573,40 @@ internal void BlitStringBounds(game_offscreen_buffer *buffer, loaded_bitmap *Pik
     for (int x = 0; x < Length; x++)
     {
         char Character = *String;
-        //NOTE: Below we do bad things because we essentially get the character bitmap twice.
-        loaded_bitmap CharacterBitmap = BitmapFromASCII(PikaBlueFont, Character); 
-        if ( (CharacterBitmap.Width * CharacterBitmap.Scale + X) > MaxX)
+        
+        // Go forward and check the current word to see if it should wrap!
+        bool should_wrap = false;
         {
-            Y += 20.0f; X = MinX; //wrap the text back down to next line.
+            char *str_ptr = String;
+            float _x = X;
+            
+            while (*str_ptr != 0 && *str_ptr != ' ')
+            {
+                loaded_bitmap char_bitmap = BitmapFromASCII(PikaBlueFont, *str_ptr);
+                
+                _x += char_bitmap.Width * char_bitmap.Scale;
+                
+                str_ptr++;
+            }
+            
+            if (_x > MaxX) 
+            {
+                should_wrap = true;
+            }
+        }
+        
+        //loaded_bitmap CharacterBitmap = BitmapFromASCII(PikaBlueFont, Character);
+        
+        if (should_wrap)
+        {
+            Y += 30.0f; X = MinX; //wrap the text back down to next line.
         }
         
         if ( Character && (Y <= MaxY) )
         {
             if (Character == 32)
             {
+                // NOTE: This is the space character!
                 X += 10.0f;
             }
             else
@@ -594,7 +618,7 @@ internal void BlitStringBounds(game_offscreen_buffer *buffer, loaded_bitmap *Pik
         }
         else
         {
-            break; //Do not blit anything more since we reached a null character.
+            break; //Do not blit anything more since we reached a null character OR overextended beneath the Y bounds.
         }
     }
 }

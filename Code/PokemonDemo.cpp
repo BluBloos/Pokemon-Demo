@@ -3,34 +3,54 @@
 TODO:
 
 Misc:
+
 - Make final tile map edit
-- Add more text to the font
-- Change words to account for bad text wrapping
+
+
+MESSAGE AND FONT STUFFS
+-----------------
+- Update the kerning for exclamation mark w/ i (looks gross). Potentially space out the exclamation mark well for all character pairs.
+- Add the following characters to the font
+-    " : ) -
+---------------------
+
+SHADERS / TRANSITIONS
+----------------------
 - Shaders could be better
-- Entity path planning and moving around, that would be dope
-- epic walk on events (entity on tile(s), invisible)
--        specifically, epic camera movement for arceus.
-- better audio mixing
+-       LUT that exits battle
+- Camera fade effect (diff type of "shader")
+-------------------
+
+NEW FEATURES
+------------------
+- Entity path planning / moving around.
+- Walk on events.
+-        specifically, camera scene for arceus.
 - audio fades
-- Camera fade effect
-- Health Bar is blue tho... :(
-- Overall bad depth features
-- Collision w/ NPC is not to my liking!
+- better audio mixing
+- Get camera to ensure that both players are on the screen at the same time
+-------------------
+
+MOVEMENT SYSTEM / PLAYER SYSTEM
+-----------------------
+- Collision w/ NPC's is not to my liking!
 - Player 2 has no thud sound
+-          thud logic is bad and can use improvement anyway
 - Player 2 doesn't do proper layering with other NPC, only player 1.
+- Player 2 cannot interact with anything at all
+- Player 2 cannot start the game
+-----------------------
 
-Optimization
-- Game lags from time to time
-- Was very slow on web (we'll see now that I optimized the video stuff)
-- The diff between smooth gameplay is so tight that plugging in my laptop charger makes it run smooth...
-- Shaders are super slow
 
-Bugs / Must do
 
-Raylib mods and the such:
-- Raylib gamepad support is iffy
-- Seems like chrome creates a virtual gamepad, raylib can read this. So gamepad support is fine on the web, ironically.
-- Gamepad support on windows is iffy w/ raylib however. My gamepad support for Pokemon Demo is better.
+Game feel w.r.t to the player:
+
+- Don't like the fact that the character can take a step without actually having an animation happen.
+-         fixed but game still feels odd
+- Game controls could prob be better (game feel)
+
+
+
 
 --------------------------
 
@@ -349,7 +369,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 
                 npc->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 1, 4);
                 
-                CloneString("Hi! Connect a controller to move me around!", npc->Entity->Message, 256); 
+                CloneString("Hi! I'm player two. Connect a controller to move me around!", npc->Entity->Message, 256); 
                 
                 npc->Entity->TileMapPos.AbsTileX = 17; npc->Entity->TileMapPos.X = 0.7f;
                 npc->Entity->TileMapPos.AbsTileY = 5; npc->Entity->TileMapPos.Y = 0.7f;
@@ -375,7 +395,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 entity_npc *mom_npc = CreateNPC(GameState);
                 
                 mom_npc->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 4, 12);
-                CloneString("My lovely son :) Let me heal your pokemon for you!", mom_npc->Entity->Message, 256); 
+                CloneString("My lovely son, let me heal your pokemon for you!", mom_npc->Entity->Message, 256); 
                 mom_npc->Entity->TileMapPos.AbsTileX = 7; mom_npc->Entity->TileMapPos.X = 0.7f;
                 mom_npc->Entity->TileMapPos.AbsTileY = 1; mom_npc->Entity->TileMapPos.Y = 0.7f;
                 game_posponed_function MomFunction = {}; MomFunction.Data = GameState; MomFunction.Function = HealPokemon;
@@ -410,7 +430,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 entity *Sign = CreateEntity(GameState);
                 Sign->TileMapPos.AbsTileX = 1; Sign->TileMapPos.AbsTileY = 8;
                 Sign->TileMapPos.X = 0.7f; Sign->TileMapPos.Y = 0.7f;
-                CloneString("The words on the sign read 'Thank's from playing! - Noah'.", Sign->Message, 256);
+                CloneString("The words on the sign read \"Thank's for playing! - Noah.\"", Sign->Message, 256);
             }
             
             //create the first door
@@ -434,7 +454,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 entity *Door2 = CreateEntity(GameState);
                 Door2->TileMapPos.AbsTileX = 19; Door2->TileMapPos.AbsTileY = 40;
                 Door2->TileMapPos.X = 0.7f; Door2->TileMapPos.Y = 0.7f;
-                CloneString("A sign on the door reads, 'Professor Maple's House'. The door is locked.", Door2->Message, 256);
+                CloneString("A sign on the door reads, \"Professor Maple's House\". The door is locked.", Door2->Message, 256);
             }
             
             
@@ -451,7 +471,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
             //////////////////////
             
             GameState->Hit2 = DEBUGLoadWav(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//Hit2.wav", StringBuffer));
-            //The spritemap I use for the battle backgrounds are thanks to Proffesor Valley who ripped them. 
+            // The spritemap I use for the battle backgrounds are thanks to Proffesor Valley who ripped them. 
             GameState->BattleBackground = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//GrassBattle.bmp", StringBuffer));
             //The HP bars and other essential battle UI were ripped by Haru Raindose so big thanks to him.
             GameState->EnemyHealth = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//EnemyHealth.bmp", StringBuffer));
@@ -1168,7 +1188,9 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     {
                         if (GameState->Player->Walking == false)
                         {
-                            GameState->AnimationTimer = 0.0f;
+                            // NOTE: We set the timer such that the player will start a new frame of animation as soon as they start walking
+                            GameState->AnimationTimer = 0.126f;
+                            //GameState->Player->Walking = true;
                         }
                         GameState->Player->Walking = true;
                     }
@@ -1303,7 +1325,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         GameState->ThudLastFrame = false;
                     }
                     
-                    //if im trying for a new tile and aftwards Im still not on that tile then I failed
+                    // if im trying for a new tile and aftwards Im still not on that tile then I failed
                     if ( SteppingOntoNewTile && ( (NewPlayerP.X != GameState->Player->Entity->TileMapPos.X) | 
                                                  (NewPlayerP.Y != GameState->Player->Entity->TileMapPos.Y) ) && !GameState->ThudLastFrame)
                     {
@@ -1607,6 +1629,7 @@ Smart system for drawing the NPC's
                         }
                     }
                 }
+                
                 GameState->AnimationTimer = 0.0f;
             }
             
