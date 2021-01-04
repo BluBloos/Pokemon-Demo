@@ -7,17 +7,27 @@ Misc:
 - Make final tile map edit
 
 
-MESSAGE AND FONT STUFFS
------------------
-- Update the kerning for exclamation mark w/ i (looks gross). Potentially space out the exclamation mark well for all character pairs.
+Must do:
 - Add the following characters to the font
 -    " : ) -
+- Player 2 has no thud sound
+-          thud logic is bad and can use improvement anyway
+- Player 2 cannot interact with anything at all
+- Player 2 cannot start the game
+- Game feel w.r.t to the player
+- Shaders could be better
+-       LUT that exits battle
+
+
+MESSAGE AND FONT STUFFS
+-----------------
+
+- Update the kerning for exclamation mark w/ i (looks gross). Potentially space out the exclamation mark well for all character pairs.
 ---------------------
 
 SHADERS / TRANSITIONS
 ----------------------
-- Shaders could be better
--       LUT that exits battle
+
 - Camera fade effect (diff type of "shader")
 -------------------
 
@@ -34,16 +44,13 @@ NEW FEATURES
 MOVEMENT SYSTEM / PLAYER SYSTEM
 -----------------------
 - Collision w/ NPC's is not to my liking!
-- Player 2 has no thud sound
--          thud logic is bad and can use improvement anyway
 - Player 2 doesn't do proper layering with other NPC, only player 1.
-- Player 2 cannot interact with anything at all
-- Player 2 cannot start the game
+
 -----------------------
 
 
 
-Game feel w.r.t to the player:
+:
 
 - Don't like the fact that the character can take a step without actually having an animation happen.
 -         fixed but game still feels odd
@@ -570,7 +577,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     GameState->UserInterfaces[1].Active = true;
                     
                     //the user pressed z
-                    if(Keyboard->DebugButtons[1].EndedDown && Keyboard->DebugButtons[1].HalfTransitionCount > 0)
+                    if( Keyboard->DebugButtons[1].EndedDown || Controller->DebugButtons[1].EndedDown )
                     {
                         PlaySoundEffect(GameState, GameState->SoundEffects[1], false, 1.0f);
                         PlaySoundEffect(GameState, GameState->SoundEffects[3], false, 1.0f);
@@ -1453,7 +1460,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     }
                     
                     /* 
-Smart system for drawing the NPC's
+                    Smart system for drawing the NPC's
                     and the player with proper layering.
                     */
                     {
@@ -1590,8 +1597,8 @@ Smart system for drawing the NPC's
                 /*
                 if (GameState->Player->Walking)
                 {
-                    //increment the counter of the first animation on the animation player
-                    GameState->Player->Entity->AnimationPlayer.Animations[0].Counter++;
+                //increment the counter of the first animation on the animation player
+                GameState->Player->Entity->AnimationPlayer.Animations[0].Counter++;
                 }
                 */
                 
