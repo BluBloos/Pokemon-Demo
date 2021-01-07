@@ -16,4 +16,6 @@ cl %CommonCompilerFlags% -FmPokemonDemoTileEditor.map ..\Code\win32_PokemonDemo_
 
 cl %CommonCompilerFlags% ..\Code\win32_PikaBlue_Cmd.cpp /link -subsystem:console,5.1 %CommonLinkerFlags%
 
+cl %CommonCompilerFlags% -DPIKABLUE_UI=1 ..\Code\win32_PikaBlue_main.cpp /link -subsystem:windows,5.1 %CommonLinkerFlags% Comdlg32.lib
+
 popd
