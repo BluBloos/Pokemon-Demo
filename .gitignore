@@ -12,3 +12,4 @@ build/raylib/*.html
 build/raylib/*.js
 build/raylib/*.exe
 build/raylib/*.wasm
+build/raylib/Data/*
