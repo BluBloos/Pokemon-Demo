@@ -565,7 +565,7 @@ internal void DEBUGCreatePokemonAnimations(memory_arena *WorldArena, debug_platf
 		Pointer += sizeof(pokemon_animation_header);
 	}
 	
-	WriteEntireFile(GameCatStrings(BaseFilePath, "Data\\Bulbasaur.amdt",StringBuffer), 
+	WriteEntireFile(GameCatStrings(BaseFilePath, "Data//Bulbasaur.amdt",StringBuffer), 
                     sizeof(pokemon_master_animation_header) + sizeof(pokemon_animation_header) * 4, Memory);
     
 	Memory = (char *)PushSize(WorldArena, sizeof(pokemon_master_animation_header) + 2 * sizeof(pokemon_animation_header));
@@ -594,7 +594,7 @@ internal void DEBUGCreatePokemonAnimations(memory_arena *WorldArena, debug_platf
 		Pointer += sizeof(pokemon_animation_header);
 	}
 	
-	WriteEntireFile(GameCatStrings(BaseFilePath, "Data\\Pikachu.amdt",StringBuffer), 
+	WriteEntireFile(GameCatStrings(BaseFilePath, "Data//Pikachu.amdt",StringBuffer), 
                     sizeof(pokemon_master_animation_header) + sizeof(pokemon_animation_header) * 2, Memory);
     
 	Memory = (char *)PushSize(WorldArena, sizeof(pokemon_master_animation_header) + 2 * sizeof(pokemon_animation_header));
@@ -623,7 +623,7 @@ internal void DEBUGCreatePokemonAnimations(memory_arena *WorldArena, debug_platf
 		Pointer += sizeof(pokemon_animation_header);
 	}
 	
-	WriteEntireFile(GameCatStrings(BaseFilePath, "Data\\Arceus.amdt",StringBuffer), 
+	WriteEntireFile(GameCatStrings(BaseFilePath, "Data//Arceus.amdt",StringBuffer), 
                     sizeof(pokemon_master_animation_header) + sizeof(pokemon_animation_header) * 2, Memory);
 }
 
@@ -750,7 +750,7 @@ internal void HealPokemon2(void *Data, unsigned int Param)
                      "Your pokemon were restored to full health!", OVERRIDEWAIT, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
 }
 
-//this doesn't belong here
+// this doesn't belong here
 internal void HealPokemon(void *Data, unsigned int Param)
 {
 	game_state *GameState = (game_state *)Data;
@@ -778,7 +778,7 @@ internal void LoadPokemonBattleAnimation(debug_platform_read_entire_file *ReadEn
 {
 	char StringBuffer[256];
 	char BaseFilePathWithName[256];
-	GameCatStrings(BaseFilePath, "Data\\", BaseFilePathWithName);
+	GameCatStrings(BaseFilePath, "Data//", BaseFilePathWithName);
 	GameCatStrings(BaseFilePathWithName, PokemonData.Name, BaseFilePathWithName);
     
 	pokemon_master_animation_header MasterHeader;
@@ -822,7 +822,7 @@ internal void LoadCries(game_state *GameState, debug_platform_read_entire_file *
 		char FileName[256];
 		pokemon_cry *Cry = &GameState->Cries[x];
 		Cry->ID = GameState->PokemonDatabase[x].NationalDexID;
-		GameCatStrings(BaseFilePath, "Data\\cries\\", FileName);
+		GameCatStrings(BaseFilePath, "Data//cries//", FileName);
 		GameCatStrings(FileName, NumberToASCII(Cry->ID, StringBuffer), FileName);
 		Cry->Wave = DEBUGLoadWav(ReadEntireFile, GameCatStrings(FileName, ".wav", FileName));
 	}

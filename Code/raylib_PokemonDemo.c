@@ -114,6 +114,16 @@ debug_read_file_result DebugReadEntireFile(char *fileName)
 {
     debug_read_file_result result = {};
     
+    // Step 1 for emcc support, convert all \\ to //
+    
+    char *str_ptr = fileName;
+    while (*str_ptr != 0) {
+        if (*str_ptr == '\\') {
+            *str_ptr = '/';
+        }
+        str_ptr++;
+    }
+    
     unsigned int bytesRead;
     unsigned char *buffer = LoadFileData(fileName, &bytesRead);
     
