@@ -1,0 +1,12 @@
+25; //dex ID
+Pikachu;
+88; //level 88
+2; //static ability
+0; //hardy nature
+12 21 1 2 30 5; //IV's
+0 0 0 0 0 0; //EV's
+4; //move 1
+5; //move 2
+6; //move 3
+7; //move 4
+0; //male gender

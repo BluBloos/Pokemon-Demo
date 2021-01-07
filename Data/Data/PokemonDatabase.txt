@@ -1,0 +1,112 @@
+1; //dexID
+Bulbasaur; //name
+11; //grass
+3; //grass
+0; //Overgrow
+1; //Chlorophyll
+88; //88% percent male
+45; //catch rate
+6; //egg group 1
+0; //egg group 2
+5120; //hatch time in steps
+0.71; //height in meters
+6.9; //weight in kilograms
+123; //base experience yield
+3; //leveling rate
+0; //ev speed
+1; //ev spdefense
+0; //ev spattack
+0; //ev defense
+0; //ev attack
+0; //ev hp
+45; //base speed
+65; //base spdefense
+65; //base spattack
+49; //base defense
+49; //base attack
+45; //base hp
+70; //base friendship
+493; //dexId
+Arceus;
+0; //normal
+0; //normal
+2; multitype
+2; multitype
+100; genderless
+3; catch rate
+7; egg group 1
+7; egg group 2
+30840; hatch time
+3.2; height
+320.0; kg
+324; base exp yield
+4; slow leveling
+0; //ev speed
+0; //ev spdefense
+0; //ev spattack
+0; //ev defense
+0; //ev attack
+3; //ev hp
+120; //base speed
+120; //base spdefense
+120; //base spattack
+120; //base defense
+120; //base attack
+120; //base hp
+0; //base friendship
+25; dexID
+Pikachu; name
+12; //electric
+12; //electric
+3; static
+3; static
+50; genderless
+190; catch rate
+4; egg group 1
+5; egg group 2
+2570; hatch time
+0.4; height
+6.0; kg
+112; base exp yield
+0; medium fast
+2; //ev speed
+0; //ev spdefense
+0; //ev spattack
+0; //ev defense
+0; //ev attack
+0; //ev hp
+90; //base speed
+50; //base spdefense
+50; //base spattack
+30; //base defense
+55; //base attack
+35; //base hp
+70; //base friendship
+42;dexid
+Golbat;
+3; //posion
+2; //flying
+0; 
+0; 
+50; 
+90; catch rate
+3; egg group 1
+3; egg group 2
+3855; hatch time
+1.6; height
+55.0; kg
+159; base exp yield
+0; medium fast
+2; //ev speed
+0; //ev spdefense
+0; //ev spattack
+0; //ev defense
+0; //ev attack
+0; //ev hp
+90; //base speed
+75; //base spdefense
+65; //base spattack
+70; //base defense
+80; //base attack
+75; //base hp
+70; //base friendship
