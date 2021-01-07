@@ -1,2 +1,2 @@
 @echo off
-cdbg64 build/win32_PokemonDemo.exe
+devenv build/win32_PokemonDemo.exe
