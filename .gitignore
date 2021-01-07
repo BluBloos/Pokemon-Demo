@@ -1,1 +1,9 @@
 Code/*.o
+build/*.exe
+build/*.obj
+build/*.pdb
+build/*.pdi
+build/*.map
+build/*.dll
+build/*.lib
+build/*.exp
