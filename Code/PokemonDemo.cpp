@@ -6,27 +6,26 @@ Misc:
 - Player 2 cannot start the game (win32 version)
 
 
-
-
 Must do:
 
-- Trying to control a character when in battle does not work!
--          or maybe it is just during shader run
-- Make final tile map edit
+
+- Grass only works once?
+- Some grass tiles are not that workable
+- Why are the animations loaded on battle -> leak memory?
+
+- Interaction w/ mum is odd
+
+
+
+
 - Player 2 has no thud sound
 -          thud logic is bad and can use improvement anyway
 
 
-- Interaction w/ mum is odd
 
 - Game feel w.r.t to the player
 - Shaders could be better
 -       LUT that exits MAINbattle
-
-
-A few concerns with two players and the messages and stuf!
-
-
 
 
 MESSAGE AND FONT STUFFS
@@ -317,7 +316,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
             loaded_asset Asset = LoadAsset(Memory->DEBUGPlatformReadEntireFile, Input->BaseFilePath, "Data//PokemonDatabase.dat");
             ParseAsset(Asset, GameState->PokemonDatabase, pokemon_database_data);
             
-            //load in all the pokemon cries
+            // LOAD IN ALL THE POKEMON CRIES
             LoadCries(GameState, Memory->DEBUGPlatformReadEntireFile, Input->BaseFilePath);
             
             //initialize the nature database
@@ -520,7 +519,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                                             TileMap->WorldCountX * TileMap->WorldCountY * TileMap->WorldCountZ, tile_chunk);
             
             // below is the code to load in the world save (which has all the chunks in it)
-            LoadRawFile(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//World2.world", StringBuffer), &GameState->LoadedWorld);
+            LoadRawFile(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//World3.world", StringBuffer), &GameState->LoadedWorld);
             for (unsigned int x = 0; x < GameState->LoadedWorld.ChunkCount; x++)
             {
                 SetChunk(TileMap, GameState->LoadedWorld.ChunkPos[x].x, GameState->LoadedWorld.ChunkPos[x].y, 
