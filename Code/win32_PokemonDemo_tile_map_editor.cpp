@@ -1,5 +1,7 @@
 #include <Windows.h>
+
 #include "PokemonDemo.h"
+
 #include "win32_PikaBlue.h"
 #include "win32_PikaBlue_Functions.cpp"
 //#include "PikaBlue_Strings.cpp"
@@ -344,6 +346,9 @@ int CALLBACK WinMain(HINSTANCE Instance,
                      LPSTR cmdLine,
                      int showCode) 
 {
+    
+    // set render mode
+    GLOBAL_COLOR_MODE = BGR;
     
     win32_state Win32State;
     Win32GetRelativePaths(&Win32State);
