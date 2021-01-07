@@ -7,3 +7,8 @@ build/*.map
 build/*.dll
 build/*.lib
 build/*.exp
+build/raylib/*.data
+build/raylib/*.html
+build/raylib/*.js
+build/raylib/*.exe
+build/raylib/*.wasm
