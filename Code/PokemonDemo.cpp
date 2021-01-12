@@ -1050,20 +1050,26 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         if (EntityAhead_p2 != NULL && !EntityAhead_p2->WalkOnEvent)
                         {
                             // Player 2 any button down
+                            // TODO: Abstract this code, i.e. the code that checks for user input.
                             if (Controller->DebugButtons[1].EndedDown && Controller->DebugButtons[1].HalfTransitionCount > 0)
                             {
                                 // check if the entity blits messages
                                 if (EntityAhead_p2->Message[0])
                                 {
-                                    CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead_p2->Message, OVERRIDEWAIT, NULL_GAME_FUNCTION, GameState->AllEntities[0].npc, EntityAhead_p2->npc);
+                                    game_posponed_function entityFunction = {}; entityFunction.Data = GameState; entityFunction.Function = EntityAhead_p2->Function.Function;
+                                    entityFunction.Param = 0; // index of initiator for subsequent use in Function made by message
+                                    
+                                    CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead_p2->Message, OVERRIDEWAIT, entityFunction, GameState->AllEntities[0].npc, EntityAhead_p2->npc);
                                 }
                                 
                                 // Check if the entity has a super function?
                                 // Check for not arceus but there is still an event 
-                                if (EntityAhead_p2->Function.Function && !StringEquals(EntityAhead_p2->Message, "Dodogyuuun!"))
+                                
+                                /*if (EntityAhead_p2->Function.Function && !StringEquals(EntityAhead_p2->Message, "Dodogyuuun!"))
                                 {
                                     GameState->FunctionQueue.Functions[GameState->FunctionQueue.Count++] = EntityAhead_p2->Function;
                                 }
+                                */
                                 
                                 // Is entity an NPC?
                                 // Make the NPC face player 2 when they interact with player 2.
@@ -1103,17 +1109,22 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                                     // check if the entity blits messages
                                     if (EntityAhead->Message[0])
                                     {
-                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, NULL_GAME_FUNCTION, GameState->Player, EntityAhead->npc);
+                                        game_posponed_function entityFunction = {}; entityFunction.Data = GameState; entityFunction.Function = EntityAhead->Function.Function;
+                                        // NOTE: Player index in entity list is 1
+                                        entityFunction.Param = 1;
+                                        
+                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, entityFunction, GameState->Player, EntityAhead->npc);
                                     }
                                     
                                     
                                     // Check for not arceus but there is still an event 
-                                    if (EntityAhead->Function.Function && !StringEquals(EntityAhead->Message, "Dodogyuuun!"))
+                                    /*if (EntityAhead->Function.Function && !StringEquals(EntityAhead->Message, "Dodogyuuun!"))
                                     {
                                         GameState->FunctionQueue.Functions[GameState->FunctionQueue.Count++] = EntityAhead->Function;
-                                    }
+                                    }*/
+                                    
                                     // NOTE: The code below is specialized for the arceus entity
-                                    else if (StringEquals(EntityAhead->Message ,"Dodogyuuun!"))
+                                    if (StringEquals(EntityAhead->Message ,"Dodogyuuun!"))
                                     {
                                         // the entity is arceus
                                         
@@ -1751,7 +1762,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
         
         
         
-        //Note there are 10 functions
+        // Note there are 10 total functions that might be in the function queue. For all these functions, update their timers.
         for (unsigned int x = 0; x < 10; x++)
         {
             game_posponed_function PosponedFunction = GameState->SuperFunctionQueue.Functions[x];

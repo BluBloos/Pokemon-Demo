@@ -3,7 +3,7 @@ internal void PosponeSuperFunction(game_state *GameState, float WaitLength, game
 {
 	PosponedFunction.Length = WaitLength;
 	PosponedFunction.Timer = GameState->GameTimer;
-	GameState->SuperFunctionQueue.Functions[GameState->SuperFunctionQueue.Count++] = PosponedFunction; 
+	GameState->SuperFunctionQueue.Functions[GameState->SuperFunctionQueue.Count++] = PosponedFunction;
 }
 //NOTE: The function above is only in this file by necesity.
 
@@ -16,13 +16,13 @@ internal void PopMessage(void *Data, unsigned int QueueIndex)
 		//if the message has a function execute it!
 		if (MessageQueue->Messages[QueueIndex].Function.Function)
 		{
-			MessageQueue->Messages[QueueIndex].Function.Function(MessageQueue->Messages[QueueIndex].Function.Data, MessageQueue->Messages[QueueIndex].Function.Param);	
+			MessageQueue->Messages[QueueIndex].Function.Function(MessageQueue->Messages[QueueIndex].Function.Data, MessageQueue->Messages[QueueIndex].Function.Param);
 		}
         
 		//clear the message
         //MessageQueue->Messages[QueueIndex] = {};
         PokeZeroMem(MessageQueue->Messages[QueueIndex]);
-		
+        
         for (unsigned int x = 0; x < LastIndex - QueueIndex; x++)
 		{
 			MessageQueue->Messages[QueueIndex + x] = MessageQueue->Messages[QueueIndex + x + 1];
@@ -42,7 +42,7 @@ internal loaded_bitmap GetSpriteFromSpriteMapIgnoreVert(memory_arena *WorldArena
 	unsigned int BackgroundColor = *Row;
     
 	for (unsigned int Y = 0; Y < TileSize;++Y)
-	{	
+	{
 		unsigned int *Pixel = (unsigned int *)Row;
 		for (unsigned int X = 0; X < TileSize; ++X)
 		{
@@ -74,7 +74,7 @@ internal animation MapNPCSpritesToAnimation(loaded_bitmap TemporyBitmaps[9])
 	animation Result = {};
 	Result.Frames[0] = TemporyBitmaps[1];
 	Result.Frames[1] = TemporyBitmaps[3];
-	Result.Frames[2] = TemporyBitmaps[1]; 
+	Result.Frames[2] = TemporyBitmaps[1];
 	Result.Frames[3] = TemporyBitmaps[4];
 	Result.Frames[4] = TemporyBitmaps[0];
 	Result.Frames[5] = TemporyBitmaps[5];
@@ -90,7 +90,7 @@ internal animation MapNPCSpritesToAnimation(loaded_bitmap TemporyBitmaps[9])
 //NOTE: I don't think function belongs inside this file
 internal animation_player LoadNPC(memory_arena *WorldArena, loaded_bitmap *SpriteMap, int CharacterRow, int CharacterIndex)
 {
-	loaded_bitmap TemporyBitmaps[9]; 
+	loaded_bitmap TemporyBitmaps[9];
 	animation_player Result = {};
     
 	if (CharacterIndex > 17)
@@ -126,7 +126,7 @@ internal animation_player LoadNPC(memory_arena *WorldArena, loaded_bitmap *Sprit
 //if we are in the overworld? I don't know if that's okay. I think that the function needs to be much more gerneral.
 //Moreover, the function is not engine specific, so it doesn't belong in the file.
 internal void UpdateMessage(game_offscreen_buffer *buffer, game_message *Message, game_state *GameState)
-{	
+{
 	if (GameState->GameState == OVERWORLD)
 	{
 		float Width = GameState->DEBUGAttackBackground.Width * 2.0f;
@@ -151,7 +151,7 @@ internal void UpdateMessage(game_offscreen_buffer *buffer, game_message *Message
 			Message->CurrentLength++;
 		}
 		else
-		{	
+		{
 			Message->Flags = Message->Flags | HOLD;
 			if ( !(Message->Flags & OVERRIDEWAIT) )
 			{
@@ -160,7 +160,7 @@ internal void UpdateMessage(game_offscreen_buffer *buffer, game_message *Message
 				PosponedFunction.Data = (void *)&GameState->MessageQueue;
 				PosponedFunction.Param = 0;
 				PosponeSuperFunction(GameState, 1.0f, PosponedFunction);
-			}		
+			}
 		}
 	}
     
@@ -289,7 +289,7 @@ internal void DEBUGCreateMoveDataBase(memory_arena *WorldArena, debug_platform_w
 	RunningMove.Accuracy = 100;
 	RunningMove.BasePower = 0;
 	RunningMove.PP = 10;
-	RunningMove.Effect = 4; //effect of recover 
+	RunningMove.Effect = 4; //effect of recover
 	CloneString("RECOVER", RunningMove.Name, 15);
 	Moves[11] = RunningMove;
 	//RunningMove = {};
@@ -307,12 +307,12 @@ internal void LoadPokemonDatabase(game_state *GameState, debug_platform_read_ent
 	for (unsigned int x = 0; x < Result.ContentSize / sizeof(pokemon_move); x++)
 	{
 		GameState->MoveDatabase[x] = *RunningMove++;
-	}	
+	}
 }
 
-//This is a dumb function. It exists because we decided it was not nescessary to store a pokemons maxHP. 
-// How is the maxHP different from every other stat? It must be stored. It's kinda like how we don't need to store 
-// the level but we do. 
+//This is a dumb function. It exists because we decided it was not nescessary to store a pokemons maxHP.
+// How is the maxHP different from every other stat? It must be stored. It's kinda like how we don't need to store
+// the level but we do.
 INLINE unsigned int GetPokemonStatHP(game_state *GameState, pokemon *Pokemon)
 {
 	pokemon_database_data PokemonData = GetPokemonDataFromID(GameState->PokemonDatabase, Pokemon->PokemonID);
@@ -335,7 +335,7 @@ internal void CanonocalizeBattlePokemonStats(game_state *GameState, battle_pokem
                                             Pokemon->EV[ATTACK], Pokemon->Level, GameState->NatureDatabase[Pokemon->Nature][SPEED]);
 	BattlePokemon->Defense = CalcPokemonStat(PokemonData.BaseStats[DEFENSE], Pokemon->IV[DEFENSE],
                                              Pokemon->EV[DEFENSE], Pokemon->Level, GameState->NatureDatabase[Pokemon->Nature][SPEED]);
-	
+    
 }
 
 //This function does not belong in this file
@@ -347,7 +347,7 @@ INLINE battle_pokemon BattlePokemonFromPokemon(game_state *GameState, pokemon *P
 	Result.Ability = Pokemon->Ability;
     
 	CanonocalizeBattlePokemonStats(GameState, &Result);
-	
+    
 	return Result;
 }
 
@@ -397,7 +397,7 @@ internal void UpdatePokemonUI(game_offscreen_buffer *buffer, game_state *GameSta
 	unsigned int MaxHealth = CalcPokemonStatHP(PokemonData.BaseStats[HP], Pokemon->Pokemon->IV[HP],
                                                Pokemon->Pokemon->EV[HP], Pokemon->Pokemon->Level);
 	char Level = Pokemon->Pokemon->Level;
-	int Experience = Pokemon->Pokemon->Experience; 
+	int Experience = Pokemon->Pokemon->Experience;
     
 	//HEALTHSLIDER
 	float HealthSliderMinX = MinX + 144.0f;
@@ -431,13 +431,13 @@ internal void UpdatePokemonUI(game_offscreen_buffer *buffer, game_state *GameSta
 	BlitStringBoundless(buffer, GameState->PokemonDemoFont, MaxHealthMinX, MinY + 77.0f, MaxHealthBuffer, 1);
     
 	//HEALTH
-	float MaxHealthMaxX = MaxX - 78.0f; 
+	float MaxHealthMaxX = MaxX - 78.0f;
 	char HealthBuffer[256];
 	NumberToASCII(Health, HealthBuffer);
 	BlitStringReverseBoundless(buffer, GameState->PokemonDemoFont, MaxHealthMaxX, MinY + 77.0f, HealthBuffer, 1);
     
 	//GENDER
-	loaded_bitmap Gender = GameState->Genders[Pokemon->Pokemon->Gender]; 
+	loaded_bitmap Gender = GameState->Genders[Pokemon->Pokemon->Gender];
 	float GenderMinX = MinX + 176.0f;
 	float GenderMaxX = GenderMinX + Gender.Width * 2;
 	float GenderMinY = MinY + 16.0f;
@@ -463,7 +463,7 @@ internal void UpdatePokemonUI2(game_offscreen_buffer *buffer, game_state *GameSt
     
 	unsigned int Health = Pokemon->Pokemon->HP;
 	unsigned int MaxHealth = CalcPokemonStatHP(PokemonData.BaseStats[HP], Pokemon->Pokemon->IV[HP],
-                                               Pokemon->Pokemon->EV[HP], Pokemon->Pokemon->Level); 
+                                               Pokemon->Pokemon->EV[HP], Pokemon->Pokemon->Level);
     
 	float HealthSliderMinX = MinX + 100.0f;
 	float HealthSliderMaxX = MaxX - 48.0f;
@@ -480,7 +480,7 @@ internal void UpdatePokemonUI2(game_offscreen_buffer *buffer, game_state *GameSt
 	//HEALTHSLIDER
     
 	//GENDER
-	loaded_bitmap Gender = GameState->Genders[Pokemon->Pokemon->Gender]; 
+	loaded_bitmap Gender = GameState->Genders[Pokemon->Pokemon->Gender];
 	float GenderMinX = MinX + 132.0f;
 	float GenderMaxX = GenderMinX + Gender.Width * 2;
 	float GenderMaxY = MaxY - 34.0f;
@@ -497,14 +497,14 @@ internal void UpdatePokemonUI2(game_offscreen_buffer *buffer, game_state *GameSt
 }
 
 //Why are there structs in this file?
-typedef struct 
+typedef struct
 {
 	unsigned int RegularCount;
 	unsigned int SpeicalCount;
 	unsigned int HeaderCount;
 } pokemon_master_animation_header;
 
-typedef struct 
+typedef struct
 {
 	unsigned int AnimationType;
 	unsigned int TileX;
@@ -512,7 +512,7 @@ typedef struct
 	unsigned int TileCount;
 } pokemon_animation_header;
 
-typedef enum 
+typedef enum
 {
 	FRONTNORMAL = RIFF_CODE('f','n','0','0'),
 	FRONTSPECIAL = RIFF_CODE('f','s','0','0'),
@@ -525,9 +525,9 @@ typedef enum
 internal void DEBUGCreatePokemonAnimations(memory_arena *WorldArena, debug_platform_write_entire_file *WriteEntireFile, char *BaseFilePath)
 {
 	char StringBuffer[256];
-	//for now im going to have to push the data to my memory, however later im going to make sure that I 
+	//for now im going to have to push the data to my memory, however later im going to make sure that I
 	//can rip memory off of my virtual page system. So essentially im going to build a very robust
-	//virtul pageing system. 
+	//virtul pageing system.
 	char *Memory = (char *)PushSize(WorldArena, sizeof(pokemon_master_animation_header) + 4 * sizeof(pokemon_animation_header));
 	char *Pointer = Memory;
     
@@ -564,8 +564,8 @@ internal void DEBUGCreatePokemonAnimations(memory_arena *WorldArena, debug_platf
 		*(pokemon_animation_header *)Pointer = Headers[x];
 		Pointer += sizeof(pokemon_animation_header);
 	}
-	
-	WriteEntireFile(GameCatStrings(BaseFilePath, "Data//Bulbasaur.amdt",StringBuffer), 
+    
+	WriteEntireFile(GameCatStrings(BaseFilePath, "Data//Bulbasaur.amdt",StringBuffer),
                     sizeof(pokemon_master_animation_header) + sizeof(pokemon_animation_header) * 4, Memory);
     
 	Memory = (char *)PushSize(WorldArena, sizeof(pokemon_master_animation_header) + 2 * sizeof(pokemon_animation_header));
@@ -593,8 +593,8 @@ internal void DEBUGCreatePokemonAnimations(memory_arena *WorldArena, debug_platf
 		*(pokemon_animation_header *)Pointer = Headers[x];
 		Pointer += sizeof(pokemon_animation_header);
 	}
-	
-	WriteEntireFile(GameCatStrings(BaseFilePath, "Data//Pikachu.amdt",StringBuffer), 
+    
+	WriteEntireFile(GameCatStrings(BaseFilePath, "Data//Pikachu.amdt",StringBuffer),
                     sizeof(pokemon_master_animation_header) + sizeof(pokemon_animation_header) * 2, Memory);
     
 	Memory = (char *)PushSize(WorldArena, sizeof(pokemon_master_animation_header) + 2 * sizeof(pokemon_animation_header));
@@ -622,8 +622,8 @@ internal void DEBUGCreatePokemonAnimations(memory_arena *WorldArena, debug_platf
 		*(pokemon_animation_header *)Pointer = Headers[x];
 		Pointer += sizeof(pokemon_animation_header);
 	}
-	
-	WriteEntireFile(GameCatStrings(BaseFilePath, "Data//Arceus.amdt",StringBuffer), 
+    
+	WriteEntireFile(GameCatStrings(BaseFilePath, "Data//Arceus.amdt",StringBuffer),
                     sizeof(pokemon_master_animation_header) + sizeof(pokemon_animation_header) * 2, Memory);
 }
 
@@ -633,15 +633,15 @@ INLINE void CanonicalizeSpriteMapTiles(unsigned int *TileX, unsigned int *TileY,
 	int ActTileX = *TileX + *TileY * MapTileWidth;
 	int ActTileY = FloorFloatToInt((float)ActTileX / MapTileWidth);
 	*TileY = ActTileY;
-	*TileX = ActTileX - ActTileY * MapTileWidth; 
+	*TileX = ActTileX - ActTileY * MapTileWidth;
 }
 
 //I don't even know what this function does
-internal animation GenerateAnimationFromChunk(memory_arena *WorldArena, loaded_bitmap SpriteSheet, 
+internal animation GenerateAnimationFromChunk(memory_arena *WorldArena, loaded_bitmap SpriteSheet,
                                               pokemon_animation_header Header, unsigned int *PixelPointer, unsigned int TileX, unsigned int TileY)
 {
 	animation Animation = {};
-	
+    
 	for (unsigned int x = 0; x < Header.TileCount; x++)
 	{
 		unsigned int *Pointer = PixelPointer - TileY * Header.TileY * SpriteSheet.Width + TileX++ * Header.TileX;
@@ -649,7 +649,7 @@ internal animation GenerateAnimationFromChunk(memory_arena *WorldArena, loaded_b
         
 		//Note, right now we are only supporting square tile sizes, so in the future we need to fix this issue
 		//maybe like very, very soon. Hopefully I don't forget about this issue. That's why I put the note afterall.
-		Animation.Frames[x] = GetSpriteFromSpriteMapIgnoreVert(WorldArena, &SpriteSheet, Pointer, Header.TileX); 
+		Animation.Frames[x] = GetSpriteFromSpriteMapIgnoreVert(WorldArena, &SpriteSheet, Pointer, Header.TileX);
 	}
     
 	Animation.MaxFrames = Header.TileCount;
@@ -667,7 +667,7 @@ internal void LoadAnimtionHeaders(debug_platform_read_entire_file *ReadEntireFil
     
 	for (unsigned int x = 0; x < MasterDest->HeaderCount; x++)
 	{
-		Dest[x] = *Header++; 
+		Dest[x] = *Header++;
 	}
 }
 
@@ -681,13 +681,13 @@ internal animation_player LoadAnimationPlayer(memory_arena *WorldArena, loaded_b
 	//initialize the pixel pointer
 	unsigned int TileX = 0;
 	unsigned int TileY = 0;
-	unsigned int *PixelPointer = SpriteSheet.PixelPointer + SpriteSheet.Width * (SpriteSheet.Height - 1);	
+	unsigned int *PixelPointer = SpriteSheet.PixelPointer + SpriteSheet.Width * (SpriteSheet.Height - 1);
     
 	for (unsigned int x = 0; x < HeaderCount; x++)
 	{
 		pokemon_animation_header Header = AnimHeader[x];
 		Animation = GenerateAnimationFromChunk(WorldArena, SpriteSheet, Header, PixelPointer, TileX, TileY);
-		
+        
 		if ( Header.AnimationType == FRONTNORMAL )
 		{
 			Result.Animations[0] = Animation;
@@ -719,7 +719,7 @@ internal void UpdatePokemonAttack(game_offscreen_buffer *buffer,game_state *Game
 {
 	loaded_bitmap AttackBox = GameState->AttackBoxes[PokemonMove.Type];
 	DrawBitmapScaled(buffer, AttackBox, MinX, MaxX, MinY, MaxY, FLIPFALSE, 2);
-	
+    
 	//NAME
 	float NameMinY = MinY + 48.0f;
 	float NameMinX = MinX + 26.0f;
@@ -741,13 +741,15 @@ internal void UpdatePokemonAttack(game_offscreen_buffer *buffer,game_state *Game
 	//////
 }
 
-//NOTE: The functions below are super janky
+// NOTE: The functions below are super janky
+// edit: even more so janky now
+// NOTE: Mom NPC at index 2.  
 internal void HealPokemon2(void *Data, unsigned int Param)
 {
 	game_state *GameState = (game_state *)Data;
     
 	CreateNewMessage(GameState, 640.0f, 460.0f,
-                     "Your pokemon were restored to full health!", OVERRIDEWAIT, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
+                     "Your pokemon were restored to full health!", OVERRIDEWAIT, NULL_GAME_FUNCTION, GameState->AllEntities[Param].npc, GameState->AllEntities[2].npc);
 }
 
 // this doesn't belong here
@@ -766,9 +768,12 @@ internal void HealPokemon(void *Data, unsigned int Param)
 		}
 	}
     
+    // Play the healing sound effect
 	PlaySoundEffect(GameState, GameState->SoundEffects[2], false, 1.0f);
+    
 	game_posponed_function Function = {}; Function.Data = GameState;
 	Function.Function = HealPokemon2;
+    Function.Param = Param;
 	PosponeSuperFunction(GameState, 1.0f, Function);
 }
 
@@ -785,7 +790,7 @@ internal void LoadPokemonBattleAnimation(debug_platform_read_entire_file *ReadEn
 	pokemon_animation_header Headers[12];
 	LoadAnimtionHeaders(ReadEntireFile, GameCatStrings(BaseFilePathWithName, ".amdt", StringBuffer), Headers, &MasterHeader);
     
-	loaded_bitmap SpriteSheet = DEBUGLoadBMP(ReadEntireFile, 
+	loaded_bitmap SpriteSheet = DEBUGLoadBMP(ReadEntireFile,
                                              GameCatStrings(BaseFilePathWithName, ".bmp", StringBuffer));
 	//GameState->DEBUGSheet = SpriteSheet;
     
@@ -809,7 +814,7 @@ internal void LoadPokemonBattleAnimation(debug_platform_read_entire_file *ReadEn
 		{
 			Dest->Animations[1].Playing = true;
 		}
-	}		
+	}
 }
 
 // Should this function remain specialized? Maybe it needs to be more functional
