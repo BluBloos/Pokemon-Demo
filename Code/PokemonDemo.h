@@ -652,16 +652,24 @@ typedef GAME_UPDATE_RENDER(game_update_render);
 #define GAME_GET_SOUND_SAMPLES(name) void name(game_memory *Memory, game_sound_output_buffer *SoundBuffer, game_user_input *Input,bool mono)
 typedef GAME_GET_SOUND_SAMPLES(game_get_sound_samples);
 
-internal void PopSound(game_state *GameState, unsigned int QueueIndex)
+internal int PopSound(game_state *GameState, unsigned int QueueIndex)
 {
 	unsigned int LastIndex = GameState->SoundQueue.Count - 1;
-	Assert(GameState->SoundQueue.Count > 0);
-	for (unsigned int x = 0; x < LastIndex - QueueIndex; x++)
+	
+    //Assert(GameState->SoundQueue.Count > 0);
+	if ( !(GameState->SoundQueue.Count > 0) ) {
+        return -1; // error
+    }
+    
+    for (unsigned int x = 0; x < LastIndex - QueueIndex; x++)
 	{
 		GameState->SoundQueue.SoundItems[QueueIndex + x] = GameState->SoundQueue.SoundItems[QueueIndex + x + 1];
 		GameState->SoundQueue.SoundItems[QueueIndex + x].QueueIndex--;
 	}
+    
 	GameState->SoundQueue.Count--;
+    
+    return 0; // success
 }
 
 internal unsigned int PlaySoundEffect(game_state *GameState, loaded_wav Wav, unsigned int Loop, float MaxVolume)
@@ -704,7 +712,10 @@ internal void PlaySoundEffectBare(void *Data, unsigned int Index)
 internal void KillSoundThenPlay(void *Data, unsigned int Index)
 {
 	game_state *GameState = (game_state *)Data;
-	PopSound(GameState,0);
+	
+    // kill all the sounds
+    while (!PopSound(GameState, 0));
+    
 	sound_item SoundItem = {};
 	SoundItem.MaxVolume = MAX_SIGNED_SHORT;
 	SoundItem.Sound = GameState->SoundEffects[Index];

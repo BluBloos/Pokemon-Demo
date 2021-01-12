@@ -49,6 +49,7 @@ INLINE unsigned int AreFloatsEqual(float Float1, float Float2)
 	return Result;
 }
 
+
 //will take ASCII and shoot back the official pokemon demo font
 internal loaded_bitmap BitmapFromASCII(loaded_bitmap *PokemonDemoFont, char Character)
 {

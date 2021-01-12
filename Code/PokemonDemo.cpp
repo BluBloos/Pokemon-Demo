@@ -4,28 +4,28 @@ TODO:
 
 Misc:
 - Player 2 cannot start the game (win32 version)
-
+- Player 2 has no thud sound
+-          thud logic is bad and can use improvement anyway
+- Game feel w.r.t to the player
+- Shaders could be better
+-       LUT that exits MAINbattle
 
 Must do:
 
 
-- Grass only works once?
-- Some grass tiles are not that workable
+- Questions: What's happens if I kill arceus?
+
+
+
 - Why are the animations loaded on battle -> leak memory?
 
-- Interaction w/ mum is odd
 
 
 
 
-- Player 2 has no thud sound
--          thud logic is bad and can use improvement anyway
 
 
 
-- Game feel w.r.t to the player
-- Shaders could be better
--       LUT that exits MAINbattle
 
 
 MESSAGE AND FONT STUFFS
@@ -237,6 +237,7 @@ internal void ArceusEvent(void *Data, unsigned int Param)
     CloneBuffer(GameState->GameBuffer, &GameState->BackBuffer);
     InstantiateShader(GameState, &GameState->BackBuffer, GameState->LUT[0], 1.5f);
     SetPauseState(GameState, 2.0f);
+    
     GameState->GameState = BEGINBATTLE;
     
     //generate the arceus
@@ -250,7 +251,9 @@ internal void ArceusEvent(void *Data, unsigned int Param)
     GameState->BufferPokemon[0].Moves[2] = FillPokemonMove(GameState->MoveDatabase, ICEBEAM);
     GameState->BufferPokemon[0].Moves[3] = FillPokemonMove(GameState->MoveDatabase, RECOVER);
     GameState->BufferPokemon[0].Gender = 1;
-    GameState->BufferPokemon[0].HP = GetPokemonStatHP(GameState, &GameState->BufferPokemon[0]);
+    //GameState->BufferPokemon[0].HP = GetPokemonStatHP(GameState, &GameState->BufferPokemon[0]);
+    
+    GameState->BufferPokemon[0].HP = 10;
 }
 
 //NOTE: This function is very specialized. We need to remove this into some other file.
@@ -758,6 +761,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                                     
                                     CreateNewMessage(GameState, CenterX, CanvasMaxY,
                                                      GameCatStrings(GameState->PokemonBackBuffer[0]->Pokemon->Nickname," leveled up!", StringBuffer), 0, NULL_GAME_FUNCTION, NULL_PLAYER, NULL_PLAYER);
+                                    
                                     PlaySoundEffect(GameState, GameState->SoundEffects[0], false, 1.0f);
                                     
                                     GameState->UserInterfaces[0].Active = true;
@@ -829,7 +833,11 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     }
                     else if (GameState->StateFlags & BATTLEWON)
                     {
-                        PopSound(GameState, 0); //stop playing the battle music
+                        //PopSound(GameState, 0);
+                        
+                        // stop playing all music
+                        while (!PopSound(GameState, 0));
+                        
                         GameState->GameState = EXITBATTLE; 
                         
                         CloneBuffer(buffer, &GameState->BackBuffer);
@@ -838,7 +846,10 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     }
                     else if (GameState->StateFlags & BATTLELOST)
                     {
-                        PopSound(GameState, 0); //stop playing the battle music
+                        // Stop playing all music
+                        //while (!PopSound(GameState, 0)); 
+                        PopSound(GameState, 0);
+                        
                         GameState->GameState = BLACKEDOUT;
                         
                         CloneBuffer(buffer, &GameState->BackBuffer);
@@ -1324,6 +1335,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     float PlayerWidth = 0.75f * PlayerHeight;
                     tile_map NewTileMap = *TileMap;
                     
+                    // TODO: Abstract this function
                     // unfreeze player
                     {
                         entity Entity = *GameState->Player->Entity;
