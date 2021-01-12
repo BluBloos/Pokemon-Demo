@@ -15,3 +15,9 @@ $ cd build
 $ win32_PokemonDemo.exe
 ```
 Note that for reliable operation the data files for the game must be located at "../Data/Data". This location is relative to the game executable. 
+
+## Features and Controls
+The game compiles as a dll allowing the platform layer to dynamically load the game. This allows for hot reloading of the game code (recompiling the game while it is running). This feature goes in hand with live loop recording, which is recording the state of the game and inputs so as to loop the game over a sequence of playback. To start recording the game, press L, to stop recording and enter playback, press L again. Finally, pressing L again will stop the looping and return control to the player.
+
+### Other Controls
+W, A, S, D to control the player. Z to interact with things (this button can be thought of as equivalent to the A button in most video games). Press F to toggle fullscreen mode.  
