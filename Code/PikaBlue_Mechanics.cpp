@@ -446,6 +446,11 @@ internal void OnPokemonFainted(game_state *GameState, game_screen_position Scree
 		Function.Param = 8;
 		CreateNewMessage(GameState, ScreenPos.X, ScreenPos.Y,
                          GameCatStrings(TargetPokemon->Nickname," fainted!", StringBuffer), 0, Function, NULL_PLAYER, NULL_PLAYER);
+        
+        if (TargetPokemon->overworldEntity != NULL) {
+            // delete the entity!
+            DeleteEntity(GameState, TargetPokemon->overworldEntity);
+        }
 	}
 	else
 	{

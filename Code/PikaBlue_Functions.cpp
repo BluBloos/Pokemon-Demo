@@ -391,3 +391,104 @@ entity_npc *CreateNPC(game_state *gameState)
     
     return npc;
 }
+
+// make the tile below the entity walkable again, i.e., unfreeze them
+void ThawEntity(game_state *GameState, entity *Entity)
+{
+    tile_map *tileMap = GameState->World->TileMap;
+    
+    unpacked_tile Tile = GetTileValue(tileMap, Entity->TileMapPos.AbsTileX, Entity->TileMapPos.AbsTileY,
+                                      Entity->TileMapPos.AbsTileZ);
+    Tile.Walkable = true;
+    SetTile(&GameState->WorldArena, tileMap, Entity->TileMapPos.AbsTileX, Entity->TileMapPos.AbsTileY,
+            Entity->TileMapPos.AbsTileZ, Tile);
+}
+
+int DeleteEntity(game_state *GameState, entity *entityToDelete)
+{
+    // NOTE: There is not a linear mapping between NPC and entity.
+    
+    /* Ideas:
+    
+    - Go through the list of NPC, find it.
+    - Get an index instead
+    - Put index INSIDE the npc.
+    
+    */
+    
+    /* For getting rid of the Entity:
+    
+    - Remove from the list.
+    - If there is an NPC, delete that too.
+    
+    */
+    
+    // Find the entity
+    int entityIndex = -1;
+    int npcIndex = -1;
+    
+    for (unsigned int i = 0; i < GameState->EntityCount; i++)
+    {
+        if (&GameState->AllEntities[i] == entityToDelete) 
+        {
+            // we found the entity
+            entityIndex = i;
+            break;
+        }
+    }
+    
+    if (entityIndex == -1)
+        return entityIndex; // failure to find entity, bad return code
+    
+    // Thaw the entity before deletion
+    ThawEntity(GameState, &GameState->AllEntities[entityIndex]);
+    
+    // Next step: Delete the npc from the array (if there is an NPC)
+    
+    if (entityToDelete->npc != NULL) 
+    {
+        for (unsigned int i = 0; i < GameState->NPC_Count; i++)
+        {
+            if (&GameState->_npc_storage[i] == entityToDelete->npc)
+            {
+                npcIndex = i;
+            }
+        }
+    }
+    
+    // DelItemFromArray(GameState->AllEntities, GameState->EntityCount, entityIndex);
+    {
+        unsigned int LastIndex = GameState->EntityCount - 1;
+        
+        
+        for (unsigned int x = 0; x < LastIndex - entityIndex; x++)
+        {
+            // Shift entity left
+            GameState->AllEntities[entityIndex + x] = GameState->AllEntities[entityIndex + x + 1];
+            // Fix the entity pointer in the npc
+            entity_npc *npc = GameState->AllEntities[entityIndex + x].npc;
+            if (npc != NULL)
+                npc->Entity = &GameState->AllEntities[entityIndex + x]; 
+        }
+        
+        GameState->EntityCount--;
+    }
+    
+    if (npcIndex != -1)
+    {
+        unsigned int LastIndex = GameState->NPC_Count - 1;
+        
+        for (unsigned int x = 0; x < LastIndex - npcIndex; x++)
+        {
+            // Shift npc left
+            GameState->_npc_storage[npcIndex + x] = GameState->_npc_storage[npcIndex + x + 1];
+            // Fix the npc pointer in the entity
+            entity *e = GameState->_npc_storage[npcIndex + x].Entity;
+            e->npc = &GameState->_npc_storage[npcIndex + x]; 
+        }
+        
+        GameState->NPC_Count--;
+    }
+    
+    return 0;
+}

@@ -175,6 +175,9 @@ typedef struct
 	unsigned char Flags;
 } pokemon_move;
 
+// force decl for circular dependency, placed here because pokemon struct has dependency as well.
+struct entity; 
+
 //NOTE: We need to reconsider this entire struct 
 typedef struct 
 {
@@ -189,7 +192,8 @@ typedef struct
 	unsigned int EV[6];
 	pokemon_move Moves[4];
 	char Gender; //the reason we have so much precision here is 
-	//because obviously there are more than 2 genders, clearly. 
+	//because obviously there are more than 2 genders, clearly.
+    entity *overworldEntity;
 } pokemon;
 
 typedef struct 
@@ -261,7 +265,7 @@ typedef struct
 
 struct entity; // force decl for circular dependency
 
-typedef struct 
+typedef struct
 {
 	struct entity *Entity; // super class
     
@@ -590,7 +594,8 @@ each subclass has a pointer BACK to the superclass. Like a double linked list.
     
     message_queue MessageQueue;
 	sound_queue SoundQueue;
-	unsigned int ThudLastFrame;
+	
+    unsigned int ThudLastFrame;
 	vector3 LastThudTile;
     
 	loaded_wav Hit2; //remove this element

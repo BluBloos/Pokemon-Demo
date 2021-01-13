@@ -37,7 +37,7 @@ typedef struct
 } tile_map_position;
 
 //NOTE: The tile map structure is a thing that contains like all 
-//the tile chunks
+// the tile chunks
 typedef struct  
 {
 	unsigned int ChunkMask;

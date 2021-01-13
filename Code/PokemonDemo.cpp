@@ -254,6 +254,7 @@ internal void ArceusEvent(void *Data, unsigned int Param)
     //GameState->BufferPokemon[0].HP = GetPokemonStatHP(GameState, &GameState->BufferPokemon[0]);
     
     GameState->BufferPokemon[0].HP = 10;
+    GameState->BufferPokemon[0].overworldEntity = &GameState->AllEntities[3];
 }
 
 //NOTE: This function is very specialized. We need to remove this into some other file.
@@ -637,6 +638,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 case BATTLE:
                 {
                     GameState->GainingExp = false;
+                    
                     DrawRect(buffer, 0.0f, (float)buffer->width, 0.0f,(float)buffer->height, 0.2f, 0.2f, 0.2f);
                     //DRAW BACKGROUND
                     float CanvasOffset = -1.0f * GameState->DEBUGAttackBackground.Height;
@@ -1333,18 +1335,19 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     //Initialize some specs about the player's bounding box
                     float PlayerHeight = TileMap->TileSizeInMeters;
                     float PlayerWidth = 0.75f * PlayerHeight;
-                    tile_map NewTileMap = *TileMap;
                     
                     // TODO: Abstract this function
                     // unfreeze player
-                    {
+                    
+                    /*{
                         entity Entity = *GameState->Player->Entity;
                         unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                                           Entity.TileMapPos.AbsTileZ);
                         Tile.Walkable = true;
                         SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                 Entity.TileMapPos.AbsTileZ, Tile);
-                    }
+                    }*/
+                    ThawEntity(GameState, GameState->Player->Entity);
                     
                     // Freeze all npc so that the player can move
                     for (unsigned int x = 0; x < GameState->EntityCount; x++)
@@ -1354,10 +1357,10 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         // NOTE: Can walk on all entities unless they are an NPC!
                         if (Entity.npc != NULL && Entity.npc != GameState->Player)
                         {
-                            unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                            unpacked_tile Tile = GetTileValue(TileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                                               Entity.TileMapPos.AbsTileZ);
                             Tile.Walkable = false;
-                            SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                            SetTile(&GameState->WorldArena, TileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                     Entity.TileMapPos.AbsTileZ, Tile);
                         }
                     }
@@ -1375,16 +1378,16 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     if ( (NewPlayerP.X != PlayerP.X) | (NewPlayerP.Y != PlayerP.Y) ) {SteppingOntoNewTile = true;}
                     
                     // Below we actually ask the tile system to calculate our new tile position
-                    GameState->Player->Entity->TileMapPos = QueryNewTileMapPos(&NewTileMap, GameState->Player->Entity->TileMapPos,
+                    GameState->Player->Entity->TileMapPos = QueryNewTileMapPos(TileMap, GameState->Player->Entity->TileMapPos,
                                                                                NewPlayerP, GameState->Player->MoveDirection, 0.5f * PlayerWidth);
                     
                     // unfreeze player 2
                     {
                         entity Entity = GameState->AllEntities[0];
-                        unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                        unpacked_tile Tile = GetTileValue(TileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                                           Entity.TileMapPos.AbsTileZ);
                         Tile.Walkable = true;
-                        SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                        SetTile(&GameState->WorldArena, TileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                 Entity.TileMapPos.AbsTileZ, Tile);
                     }
                     
@@ -1396,10 +1399,10 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         // NOTE: Can walk on all entities unless they are an NPC!
                         if (Entity.npc != NULL && Entity.npc != GameState->AllEntities[0].npc)
                         {
-                            unpacked_tile Tile = GetTileValue(&NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                            unpacked_tile Tile = GetTileValue(TileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                                               Entity.TileMapPos.AbsTileZ);
                             Tile.Walkable = false;
-                            SetTile(&GameState->WorldArena, &NewTileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
+                            SetTile(&GameState->WorldArena, TileMap, Entity.TileMapPos.AbsTileX, Entity.TileMapPos.AbsTileY,
                                     Entity.TileMapPos.AbsTileZ, Tile);
                         }
                     }
@@ -1693,7 +1696,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     }
                     
                 }break;
-            }
+            } // end of switch
             
             float AnimationDeltaTime = 0.125f;
             
@@ -1770,7 +1773,8 @@ GAME_UPDATE_RENDER(GameUpdateRender)
             GameState->LastPlayer.npc->MoveDirection = GameState->Player->MoveDirection;
             
             GameState->LastPlayer.TileMapPos = GameState->Player->Entity->TileMapPos;
-        } // end of testing for game state and updating accordingly
+            
+        } // end of game pause state
         
         
         
