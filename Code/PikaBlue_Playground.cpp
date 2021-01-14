@@ -777,7 +777,7 @@ internal void HealPokemon(void *Data, unsigned int Param)
 	PosponeSuperFunction(GameState, 1.0f, Function);
 }
 
-//NOTE: We seriously need to reconsider how animations work
+// NOTE: We seriously need to reconsider how animations work
 internal void LoadPokemonBattleAnimation(debug_platform_read_entire_file *ReadEntireFile, memory_arena *Arena, char *BaseFilePath,
                                          animation_player *Dest, pokemon_database_data PokemonData, unsigned int User)
 {

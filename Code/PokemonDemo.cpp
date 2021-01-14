@@ -227,8 +227,15 @@ internal void InstantiateShader(game_state *GameState, game_offscreen_buffer *so
     GameState->Shader = Shader;
 }
 
-//NOTE: It's alright to have the arceus event coded like this. However I think its important that we restructure 
-//how posponed functions work. I think we need to remodel the Param as a gerneric linked list.
+internal void PapyrusFunction(void *Data, unsigned int Param)
+{
+    game_state *GameState = (game_state *)Data;
+    
+    
+}
+
+// NOTE: It's alright to have the arceus event coded like this. However I think its important that we restructure 
+// how posponed functions work. I think we need to remodel the Param as a generic linked list.
 internal void ArceusEvent(void *Data, unsigned int Param)
 {
     game_state *GameState = (game_state *)Data;
@@ -291,6 +298,9 @@ internal void BlackOut(void *Data, unsigned int Param)
     
     GameState->GameState = ENTERINGAREA;
 }
+
+// TODO: I put this here because I was lazy!
+char *PapyrusMessageChain[7]; 
 
 #ifdef __cplusplus
 extern "C"
@@ -479,6 +489,38 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 CloneString("A sign on the door reads, \"Professor Maple's House\". The door is locked.", Door2->Message, 256);
             }
             
+            // create the NPC that is hiding (second easter egg)
+            {
+                entity_npc *egg = CreateNPC(GameState);
+                
+                egg->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 0, 0);
+                
+                // BIG Message chain for my boy papyrus...
+                
+                PapyrusMessageChain[0] = "...";
+                PapyrusMessageChain[1] = "I...";
+                PapyrusMessageChain[2] = "I'VE BEEN FOUND!";
+                PapyrusMessageChain[3] = "...";
+                PapyrusMessageChain[4] = "NO...";
+                PapyrusMessageChain[5] = "IT IS I WHO HAS FOUND YOU! HA!";
+                PapyrusMessageChain[6] = "...";
+                
+                egg->Entity->MessageChain = PapyrusMessageChain;
+                egg->Entity->MessageFlags = CHAIN | IMPORTANT;
+                egg->Entity->MessageChainCount = 7;
+                
+                game_posponed_function _PapyrusFunction;
+                _PapyrusFunction.Function = PapyrusFunction;
+                _PapyrusFunction.Data = GameState;
+                _PapyrusFunction.Param = 0;
+                
+                egg->Entity->Function = _PapyrusFunction;
+                
+                egg->Entity->TileMapPos.AbsTileX = 10; egg->Entity->TileMapPos.X = 0.7f;
+                egg->Entity->TileMapPos.AbsTileY = 4; egg->Entity->TileMapPos.Y = 0.7f;
+                
+            }
+            
             
             //LOAD GENDERS
             UnPackBitmapTiles(&GameState->WorldArena, DEBUGLoadBMP( Memory->DEBUGPlatformReadEntireFile,
@@ -618,6 +660,8 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     GameState->PokemonB2 = BattlePokemonFromPokemon(GameState, &GameState->BufferPokemon[0]);
                     
                     //initialize the animation frames! Nice!
+                    
+                    // TODO: Extended to infinity, this code will likely crash the game as the memory arena is going to be full of animation data.
                     LoadPokemonBattleAnimation(Memory->DEBUGPlatformReadEntireFile, &GameState->WorldArena, Input->BaseFilePath, 
                                                &GameState->PokemonA1, GetPokemonDataFromID(GameState->PokemonDatabase, GameState->PokemonB1.Pokemon->PokemonID), 
                                                true);
@@ -730,6 +774,9 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         float LastExperience = GameState->FloatBuffer[0];
                         SafeSubtract(GameState->FloatBuffer[0], GameState->FloatBuffer[2]); 
                         float DeltaExperience = LastExperience - GameState->FloatBuffer[0];
+                        
+                        DeltaExperience = DeltaExperience * 8;
+                        
                         GameState->GainingExp = true;
                         
                         if (!GameState->UserInterfaces[0].Active)
@@ -1120,13 +1167,21 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                                 if (Keyboard->DebugButtons[1].EndedDown && Keyboard->DebugButtons[1].HalfTransitionCount > 0)
                                 {
                                     // check if the entity blits messages
-                                    if (EntityAhead->Message[0])
+                                    if (EntityAhead->Message[0] || (EntityAhead->MessageFlags & CHAIN))
                                     {
                                         game_posponed_function entityFunction = {}; entityFunction.Data = GameState; entityFunction.Function = EntityAhead->Function.Function;
                                         // NOTE: Player index in entity list is 1
                                         entityFunction.Param = 1;
                                         
-                                        CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, entityFunction, GameState->Player, EntityAhead->npc);
+                                        if (EntityAhead->MessageFlags & CHAIN)
+                                        {
+                                            CreateNewMessageChain(GameState, CenterX, CenterY + 100.0f,  entityFunction, GameState->Player, EntityAhead->npc, EntityAhead->MessageChain,EntityAhead->MessageChainCount
+                                                                  );
+                                        }
+                                        else
+                                        {
+                                            CreateNewMessage(GameState, CenterX, CenterY + 100.0f, EntityAhead->Message, OVERRIDEWAIT, entityFunction, GameState->Player, EntityAhead->npc);
+                                        }
                                     }
                                     
                                     

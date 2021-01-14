@@ -279,6 +279,11 @@ typedef struct
     /////////////////////
 } entity_npc;
 
+typedef enum
+{
+    CHAIN=1
+} entity_message_flags;
+
 typedef struct entity
 {
 	//vector2f Pos; // relative to the camera!
@@ -296,8 +301,10 @@ typedef struct entity
     unsigned int WalkOnEvent;
     
     // first character is 0 when the entity does not blit messages.
-    char Message[256]; 
-	unsigned int MessageFlags;
+    char Message[256];
+    char **MessageChain; // depends on message flags
+    unsigned int MessageChainCount;
+    entity_message_flags MessageFlags;
 	
     // will be done after the entity blits any messages, if any at all
 	game_posponed_function Function; 
@@ -777,6 +784,24 @@ internal void CreateNewMessage(game_state *GameState, float PosX, float PosY, ch
 	
 	CloneString(String, Message->String, GetStringLength(String));
 	Message->Flags = OverflowFlags;
+}
+
+internal void CreateNewMessageChain(game_state *GameState, float PosX, float PosY,  
+                                    game_posponed_function Function, entity_npc *initiator, entity_npc *speaker, char **Strings, unsigned int messageCount)
+{
+    // The idea is to just buffer up all the messages in the queue. I suppose this is why we made a queue after all!
+    
+    for (unsigned int i = 0; i < messageCount; i++)
+    {
+        if (i == messageCount - 1)
+        {
+            CreateNewMessage(GameState, PosX, PosY, Strings[i], OVERRIDEWAIT, Function, initiator, speaker);
+        }
+        else 
+        {
+            CreateNewMessage(GameState, PosX, PosY, Strings[i], OVERRIDEWAIT, NULL_GAME_FUNCTION, initiator, speaker);
+        }
+    }
 }
 
 #include "PokemonDemo_io.cpp"
