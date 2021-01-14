@@ -1726,8 +1726,15 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         
                         if( PlayerOnGrassTile & TryForRandomEncounter(GameState))
                         {
-                            PopSound(GameState, 0); //stop playing background music
-                            PlaySoundEffect(GameState, GameState->Music, true, 1.0f); //start plaing battle music
+                            // stop playing background music
+                            PopSound(GameState, 0); 
+                            
+                            // start plaing battle music
+                            PlaySoundEffect(GameState, GameState->Music, true, 1.0f); 
+                            
+                            // unfreeze the player;
+                            ThawEntity(GameState, GameState->Player->Entity);
+                            
                             SeedRandom(GameState);
                             
                             //generate the wild pokemon!
