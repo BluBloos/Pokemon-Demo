@@ -427,7 +427,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 entity_npc *mom_npc = CreateNPC(GameState);
                 
                 mom_npc->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 4, 12);
-                CloneString("My lovely son, let me heal your pokemon for you!", mom_npc->Entity->Message, 256); 
+                CloneString("Honey, let me heal your pokemon for you!", mom_npc->Entity->Message, 256); 
                 mom_npc->Entity->TileMapPos.AbsTileX = 7; mom_npc->Entity->TileMapPos.X = 0.7f;
                 mom_npc->Entity->TileMapPos.AbsTileY = 1; mom_npc->Entity->TileMapPos.Y = 0.7f;
                 game_posponed_function MomFunction = {}; MomFunction.Data = GameState; MomFunction.Function = HealPokemon;
@@ -462,7 +462,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 entity *Sign = CreateEntity(GameState);
                 Sign->TileMapPos.AbsTileX = 1; Sign->TileMapPos.AbsTileY = 8;
                 Sign->TileMapPos.X = 0.7f; Sign->TileMapPos.Y = 0.7f;
-                CloneString("The words on the sign read \"Thank's for playing! - Noah.\"", Sign->Message, 256);
+                CloneString("It appears that you do not know how to read.", Sign->Message, 256);
             }
             
             //create the first door
@@ -486,7 +486,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 entity *Door2 = CreateEntity(GameState);
                 Door2->TileMapPos.AbsTileX = 19; Door2->TileMapPos.AbsTileY = 40;
                 Door2->TileMapPos.X = 0.7f; Door2->TileMapPos.Y = 0.7f;
-                CloneString("A sign on the door reads, \"Professor Maple's House\". The door is locked.", Door2->Message, 256);
+                CloneString("Professor Maple's house!", Door2->Message, 256);
             }
             
             // create the NPC that is hiding (second easter egg)
