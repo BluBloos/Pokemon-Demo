@@ -506,7 +506,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 PapyrusMessageChain[6] = "...";
                 
                 egg->Entity->MessageChain = PapyrusMessageChain;
-                egg->Entity->MessageFlags = CHAIN | IMPORTANT;
+                egg->Entity->MessageFlags = CHAIN ;
                 egg->Entity->MessageChainCount = 7;
                 
                 game_posponed_function _PapyrusFunction;
@@ -516,8 +516,8 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 
                 egg->Entity->Function = _PapyrusFunction;
                 
-                egg->Entity->TileMapPos.AbsTileX = 10; egg->Entity->TileMapPos.X = 0.7f;
-                egg->Entity->TileMapPos.AbsTileY = 4; egg->Entity->TileMapPos.Y = 0.7f;
+                egg->Entity->TileMapPos.AbsTileX = 3; egg->Entity->TileMapPos.X = 0.7f;
+                egg->Entity->TileMapPos.AbsTileY = 10; egg->Entity->TileMapPos.Y = 0.7f;
                 
             }
             
