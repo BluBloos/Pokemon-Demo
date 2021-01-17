@@ -193,7 +193,7 @@ typedef struct
 	pokemon_move Moves[4];
 	char Gender; //the reason we have so much precision here is 
 	//because obviously there are more than 2 genders, clearly.
-    entity *overworldEntity;
+    struct entity *overworldEntity;
 } pokemon;
 
 typedef struct 
@@ -263,7 +263,6 @@ typedef struct
 
 ////////////////// ENTITY STUFFS
 
-struct entity; // force decl for circular dependency
 
 typedef struct
 {
