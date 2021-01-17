@@ -258,9 +258,8 @@ internal void ArceusEvent(void *Data, unsigned int Param)
     GameState->BufferPokemon[0].Moves[2] = FillPokemonMove(GameState->MoveDatabase, ICEBEAM);
     GameState->BufferPokemon[0].Moves[3] = FillPokemonMove(GameState->MoveDatabase, RECOVER);
     GameState->BufferPokemon[0].Gender = 1;
-    //GameState->BufferPokemon[0].HP = GetPokemonStatHP(GameState, &GameState->BufferPokemon[0]);
+    GameState->BufferPokemon[0].HP = GetPokemonStatHP(GameState, &GameState->BufferPokemon[0]);
     
-    GameState->BufferPokemon[0].HP = 10;
     GameState->BufferPokemon[0].overworldEntity = &GameState->AllEntities[3];
 }
 
@@ -896,8 +895,9 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                     else if (GameState->StateFlags & BATTLELOST)
                     {
                         // Stop playing all music
-                        //while (!PopSound(GameState, 0)); 
-                        PopSound(GameState, 0);
+                        // while (!PopSound(GameState, 0)); 
+                        // PopSound(GameState, 0);
+                        while (!PopSound(GameState, 0));
                         
                         GameState->GameState = BLACKEDOUT;
                         
