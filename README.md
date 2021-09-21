@@ -2,7 +2,7 @@
 Video game demo in the style of Pokemon. Made completely from scratch and in C, just like @ <a href="https://handmadehero.org/">Handmade Hero</a>. Disclaimer: I do not own any of the assets used in this project (images and sound used), these are the intellectual property of <a href="https://www.nintendo.com/">Nintendo</a>.
 
 ## Demo
-Head over to http://ncabral.ca for an interactive demo!
+Head over to http://ncabral.ca. Scroll down.
 
 ## Build Steps
 This project uses the visual studio compiler, so you will need to install <a href="https://visualstudio.microsoft.com/vs/">Visual Studio</a> if you haven't already. At the time of writing, the latest version is 2019, so I cannot guarentee proper building for any subsequent versions. Also note that if your visual studio version is different than 2019, you will need to change *shell.bat* accordingly.   
