@@ -1,4 +1,4 @@
-<img src="https://gyazo.com/92ccd4cccc9928b372287a253e4ad84c" />
+<img src="https://i.gyazo.com/92ccd4cccc9928b372287a253e4ad84c.gif" />
 
 # PokemonDemo <img src="https://emojis.slackmojis.com/emojis/images/1479080836/1363/eevee.gif?1479080836" />
 Video game demo in the style of Pokemon. Made completely from scratch and in C, just like @ <a href="https://handmadehero.org/">Handmade Hero</a>. Disclaimer: I do not own any of the assets used in this project (images and sound used), these are the intellectual property of <a href="https://www.nintendo.com/">Nintendo</a>.
