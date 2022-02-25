@@ -56,7 +56,7 @@ for audio thinking AudioStream and Sound look good
 
 #include <stddef.h> // for size_t
 
-//#include "PokemonDemo.h"
+// #include "PokemonDemo.h"
 // NOTE: Diff from win32 version, no hot reloading
 #include "PokemonDemo.cpp"
 
@@ -95,6 +95,9 @@ Texture2D backbuffer = {};
 //-----------------
 
 #define FRAME_RATE 60
+
+// just an assumption...
+#define GAMEPAD_PLAYER1 0 
 
 // ----------------------------data structures for recording input and playback
 unsigned int inputPlayingIndex = 0;
@@ -167,7 +170,7 @@ int main(void)
         SetAudioStreamBufferSizeDefault(SOUND_BUFFER_SAMPLES);  
         
         // 48 khz, 16bit sample size, channels: 2
-        stream = InitAudioStream(48000, 16, 1);
+        stream = LoadAudioStream(48000, 16, 1);
         
         gameSoundOutputBuffer.SamplesPerSecond = 48000;
         GameSoundSamples = MemAlloc(SOUND_BUFFER_SAMPLES * sizeof(short));
@@ -179,7 +182,7 @@ int main(void)
     // Initialize the gameMemory structure
     {
         gameMemory.IsInitialized = false;
-        gameMemory.StorageSize = MegaBytes(64);
+        gameMemory.StorageSize = MegaBytes(10); // TODO(Noah): Figure out if this is actually too small.
         gameMemory.Storage = MemAlloc(gameMemory.StorageSize); 
         gameMemory.TransientStorageSize = GigaBytes(1);
         gameMemory.TransientStorage = MemAlloc(gameMemory.TransientStorageSize);
@@ -198,7 +201,7 @@ int main(void)
         int width = screenWidth;
         int height = screenHeight;
         // format is R low order, G middle order, B top order, A is the top most order
-        int format = UNCOMPRESSED_R8G8B8A8;
+        int format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
         int mipmaps = 1;
         
         // NOTE: Make damn sure the image matches the gameOffscreenBuffer!
@@ -263,7 +266,7 @@ int main(void)
     // Unload the backbuffer
     UnloadTexture(backbuffer);
     // Close raw audio stream and delete buffers from RAM
-    CloseAudioStream(stream);   
+    UnloadAudioStream(stream);   
     // Close audio device (music streaming is automatically stopped)
     CloseAudioDevice();         
     
