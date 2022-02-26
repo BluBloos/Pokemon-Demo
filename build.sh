@@ -27,6 +27,7 @@ emcc -o build/raylib/index.html src/raylib_PokemonDemo.c -Os -Wall raylib/src/li
 pushd build
 pushd raylib
 
+npm install
 npm start
 
 popd

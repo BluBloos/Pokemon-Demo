@@ -4,3 +4,5 @@ build/raylib/index.data
 build/raylib/index.html
 build/raylib/index.js
 build/raylib/index.wasm
+Data/.DS_Store
+.DS_Store
