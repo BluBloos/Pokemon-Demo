@@ -1,8 +1,8 @@
-pushd build
-pushd raylib
-
-npm install
-npm start
-
+pushd emsdk
+./emsdk install latest
+./emsdk activate latest
+source "./emsdk_env.sh"
+EMSDK_PATH=$EMSDK
 popd
-popd
+
+emrun build/raylib/surge/index.html

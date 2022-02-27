@@ -23,7 +23,7 @@ This will generate all needed files in build/raylib/surge. To run the web app, u
 run.sh
 ```
 
-This will launch a server on your local machine to serve the static site (which will require that you have node.js installed). Finally, navigate to ```localhost:3000/surge```
+This will launch a server on your local machine via emrun to serve the static site. emrun should launch your browser as well.
 
 ## Native Windows Build
 This project uses the visual studio compiler, so you will need to install <a href="https://visualstudio.microsoft.com/vs/">Visual Studio</a> if you haven't already. At the time of writing, the latest version is 2019, so I cannot guarentee proper building for any subsequent versions. Also note that if your visual studio version is different than 2019, you will need to change *shell.bat* accordingly.   
