@@ -11,16 +11,14 @@ if [ -f "libraylib.a" ]; then echo "No need to build raylib"; else make PLATFORM
 popd
 popd
 
-pushd build
-pushd raylib
+mkdir build/raylib/surge/
 
-rm pokemondemo.wasm
-rm pokemondemo.html
+rm build/raylib/surge/*.wasm
+rm build/raylib/surge/*.html
+rm build/raylib/surge/*.js
+rm build/raylib/surge/*.data
 
-popd
-popd
-
-emcc -o build/raylib/index.html src/raylib_PokemonDemo.c -Os -Wall raylib/src/libraylib.a  \
+emcc -o build/raylib/surge/index.html src/raylib_PokemonDemo.c -Os -Wall raylib/src/libraylib.a  \
     -I raylib/src  -Lraylib/src/libraylib.a -s USE_GLFW=3 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 \
     --preload-file Data -DPLATFORM_WEB
 
