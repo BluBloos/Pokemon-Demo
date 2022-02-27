@@ -16,10 +16,11 @@ jobs:
       - name: Build for web
         run: ./build.sh
         shell: bash
-      - name: Install surge
+      - name: Install node
         uses: actions/setup-node@v1
         with:
           node-version: 8
+      - name: Install surge
         run: npm install -g surge
       - name: Publish to surge
         run: surge build/raylib/surge ${{ secrets.SURGE_DOMAIN }} --token ${{ secrets.SURGE_TOKEN }}
