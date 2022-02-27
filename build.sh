@@ -7,15 +7,15 @@ popd
 
 pushd raylib
 pushd src
-if [ -f "libraylib.a" ]; then echo "No need to build raylib" else make PLATFORM=PLATFORM_WEB -B; fi
+if [ -f "libraylib.a" ]; then echo "No need to build raylib"; else make PLATFORM=PLATFORM_WEB -B; fi
 popd
 popd
 
 pushd build
 pushd raylib
 
-del pokemondemo.wasm
-del pokemondemo.html
+rm pokemondemo.wasm
+rm pokemondemo.html
 
 popd
 popd
