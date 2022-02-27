@@ -22,15 +22,6 @@ emcc -o build/raylib/surge/index.html src/raylib_PokemonDemo.c -Os -Wall raylib/
     -I raylib/src  -Lraylib/src/libraylib.a -s USE_GLFW=3 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 \
     --preload-file Data -DPLATFORM_WEB
 
-pushd build
-pushd raylib
-
-npm install
-npm start
-
-popd
-popd
-
 #pushd src
 #del *.o
 #popd
