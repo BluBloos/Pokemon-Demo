@@ -20,7 +20,7 @@ rm build/raylib/surge/*.data
 
 emcc -o build/raylib/surge/index.html src/raylib_PokemonDemo.c -Os -Wall raylib/src/libraylib.a  \
     -I raylib/src  -Lraylib/src/libraylib.a -s USE_GLFW=3 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 \
-    --preload-file Data -DPLATFORM_WEB
+    --shell-file src/shell_minimal.html --preload-file Data -DPLATFORM_WEB
 
 #pushd src
 #del *.o
