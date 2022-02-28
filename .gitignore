@@ -1,9 +1,5 @@
 Code/*.o
-build/raylib/node_modules
-build/raylib/index.data
-build/raylib/index.html
-build/raylib/index.js
-build/raylib/index.wasm
 build/raylib/surge/
+build/macOS
 Data/.DS_Store
 .DS_Store

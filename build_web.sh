@@ -7,10 +7,14 @@ popd
 
 pushd raylib
 pushd src
-if [ -f "libraylib.a" ]; then echo "No need to build raylib"; else make PLATFORM=PLATFORM_WEB -B; fi
+rm *.o
+rm libraylib.a
+make PLATFORM=PLATFORM_WEB -B
 popd
 popd
 
+mkdir build
+mkdir build/raylib
 mkdir build/raylib/surge/
 
 rm build/raylib/surge/*.wasm

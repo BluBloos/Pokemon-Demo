@@ -14,16 +14,30 @@ To play the game, you can head over to https://pokemondemo.surge.sh/
 The platform layer of the project has been rewritten via the popular https://www.raylib.com/ library to support building for the web. Simply run 
 
 ```bash
-build.sh
+build_web.sh
 ```
 
 This will generate all needed files in build/raylib/surge. To run the web app, use
 
 ```bash
-run.sh
+run_web.sh
 ```
 
 This will launch a server on your local machine via emrun to serve the static site. emrun should launch your browser as well.
+
+## macOS Build
+
+The macOS version of the game also leverages raylib. Simply run
+
+```bash
+build_macos.sh
+```
+
+This will generate all needed files in build/macOS. To run the game, use
+
+```bash
+run_macos.sh
+```
 
 ## Native Windows Build
 This project uses the visual studio compiler, so you will need to install <a href="https://visualstudio.microsoft.com/vs/">Visual Studio</a> if you haven't already. At the time of writing, the latest version is 2019, so I cannot guarentee proper building for any subsequent versions. Also note that if your visual studio version is different than 2019, you will need to change *shell.bat* accordingly.   
