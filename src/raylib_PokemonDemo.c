@@ -182,13 +182,15 @@ int main(void)
     // Initialize the gameMemory structure
     {
         gameMemory.IsInitialized = false;
-        gameMemory.StorageSize = MegaBytes(10); // TODO(Noah): Figure out if this is actually too small.
+        gameMemory.StorageSize = MegaBytes(64); // TODO(Noah): Figure out if this is actually too small.
+        gameMemory.Storage = NULL;
         gameMemory.Storage = MemAlloc(gameMemory.StorageSize); 
         gameMemory.TransientStorageSize = GigaBytes(1);
         gameMemory.TransientStorage = MemAlloc(gameMemory.TransientStorageSize);
         
-        if (gameMemory.Storage != NULL && gameMemory.TransientStorage != NULL)
+        if (gameMemory.Storage != NULL && gameMemory.TransientStorage != NULL) {
             gameMemory.Valid = true;
+        }
         
         gameMemory.DEBUGPlatformReadEntireFile = DebugReadEntireFile;
         gameMemory.DEBUGPlatformFreeFileMemory = DebugFreeFileMemory;
@@ -222,19 +224,7 @@ int main(void)
 #endif
     }
     
-    // Initialize the game user input
-    {
-        // Open everything from the local dir ?
-        
-        // pokemondemo.cpp opens things like
-        //  "Data\\..." 
-        
-#ifdef PLATFORM_DESKTOP
-        gameUserInput.BaseFilePath = "C:\\dev\\pokemondemo\\Data\\";
-#elif PLATFORM_WEB
-        gameUserInput.BaseFilePath = "";
-#endif
-    }
+    gameUserInput.BaseFilePath = "";
     
 #ifdef PLATFORM_WEB
     emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
@@ -400,7 +390,7 @@ void UpdateDrawFrame(void)
             }
         }
     } // done updating input
-    
+   
     // Run the game
     GameUpdateRender(&gameMemory, &gameOffscreenBuffer, &gameUserInput, RGB);
     

@@ -14,7 +14,7 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init
       - name: Build for web
-        run: ./build.sh
+        run: ./build_web.sh
         shell: bash
       - name: Install node
         uses: actions/setup-node@v1

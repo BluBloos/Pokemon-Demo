@@ -7,10 +7,14 @@ popd
 
 pushd raylib
 pushd src
-if [ -f "libraylib.a" ]; then echo "No need to build raylib"; else make PLATFORM=PLATFORM_WEB -B; fi
+rm *.o
+rm libraylib.a
+make PLATFORM=PLATFORM_WEB -B
 popd
 popd
 
+mkdir build
+mkdir build/raylib
 mkdir build/raylib/surge/
 
 rm build/raylib/surge/*.wasm
@@ -20,19 +24,4 @@ rm build/raylib/surge/*.data
 
 emcc -o build/raylib/surge/index.html src/raylib_PokemonDemo.c -Os -Wall raylib/src/libraylib.a  \
     -I raylib/src  -Lraylib/src/libraylib.a -s USE_GLFW=3 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 \
-    --preload-file Data -DPLATFORM_WEB
-
-#pushd src
-#del *.o
-#popd
-
-#pushd build
-#pushd raylib
-
-#del pokemondemo.wasm
-#del pokemondemo.html
-
-#make BUILD_MODE=DEBUG
-
-#popd
-#popd
+    --shell-file src/shell_minimal.html --emrun --preload-file Data -DPLATFORM_WEB
