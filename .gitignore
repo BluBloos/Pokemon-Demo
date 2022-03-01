@@ -1,5 +1,6 @@
 Code/*.o
 build/raylib/surge/
 build/macOS
+build/windows
 Data/.DS_Store
 .DS_Store
