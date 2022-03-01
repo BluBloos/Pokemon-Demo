@@ -1,6 +1,6 @@
 inline int EqualsPokemonDemo(char *String)
 {
-	char *PokemonDemo = "pokemondemo";
+	char *PokemonDemo = "Pokemon-Demo";
 	for (char *Scan = String; *Scan && *PokemonDemo;Scan++)
 	{
 		if (*Scan == *PokemonDemo++)
@@ -27,18 +27,13 @@ internal void Win32GetRelativePaths(win32_state *State)
 			State->OnePastLastSlash = Scan + 1;
 		}
 	}
-	for (char *Scan = State->EXEFileName;*Scan;++Scan)
+	for (char *Scan = State->EXEFileName; *Scan;++Scan)
 	{
-		if (*Scan == 'p')
+		if (*Scan == 'P' && EqualsPokemonDemo(Scan))
 		{
-			if ( EqualsPokemonDemo(Scan) )
-			{
-				//NOTE: Here I put the dest count to 0 because it's not actually
-				//being used
-				CatStrings((int)(Scan - State->EXEFileName), State->EXEFileName, 
-						   17,"PokemonDemo\\Data\\",0, State->BaseFilePath);
-				break;
-			}
+			CatStrings((int)(Scan - State->EXEFileName), State->EXEFileName, 
+				17,"Pokemon-Demo\\", WIN32_FILE_NAME_COUNT, State->BaseFilePath);
+			break;
 		}
 	}
 	
