@@ -11,16 +11,16 @@ To play the game, you can head over to https://pokemondemo.surge.sh/
 
 ## Web
 
-The platform layer of the project has been rewritten via the popular https://www.raylib.com/ library to support building for the web. Simply run 
+The platform layer of the project has been rewritten via the popular https://www.raylib.com/ library to support building for the web. The following instructions assume that the host machine is Unix-like. They have been tested on macOS.
 
 ```bash
-build_web.sh
+./build_web.sh
 ```
 
 This will generate all needed files in build/raylib/surge. To run the web app, use
 
 ```bash
-run_web.sh
+./run_web.sh
 ```
 
 This will launch a server on your local machine via emrun to serve the static site. emrun should launch your browser as well.
@@ -30,13 +30,13 @@ This will launch a server on your local machine via emrun to serve the static si
 The macOS version of the game also leverages raylib. Simply run
 
 ```bash
-build_macos.sh
+./build_macos.sh
 ```
 
 This will generate all needed files in build/macOS. To run the game, use
 
 ```bash
-run_macos.sh
+./run_macos.sh
 ```
 
 ## Windows
