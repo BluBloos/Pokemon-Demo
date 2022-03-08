@@ -56,9 +56,12 @@ $ win32_PokemonDemo.exe
 ```
 
 ## Features Specific to Native Windows Build 
+
 **Hot-reloading:** The game compiles as a dll, allowing the platform layer to dynamically load the game.
 
 **Live Loop Recording:** The player takes a snaphot of the game and records subsequent inputs. Then, without them ever pressing another button, the game continues to play back the same sequence. 
+
+Aside from extra features specific to the game itself, **there exists supplementary tools that will only run on a Windows host**. These tools were created to aid in the development of the game itself. Documentation for these tools can be found <a href="https://github.com/BluBloos/Pokemon-Demo/wiki/Supplementary-Tools-(only-on-native-Windows-build)">here</a>
 
 # Controls
 - W, A, S, D to control the player. 
