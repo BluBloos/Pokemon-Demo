@@ -290,20 +290,29 @@ LRESULT CALLBACK Win32WindowProc(HWND window,
 				case ID_Exit:
 				{
 					globalRunning = false;
-				}break;
+				}
+				break;
 				case ID_Clear:
 				{
 					Assert(GlobalTileChunk.Tiles);
 					FillChunk(&GlobalTileChunk,1);
-				}break;
+				}
+				break;
 				case ID_NextBrush:
 				{
 					IterateBrush();
-				}break;
+				}
+				break;
+				case ID_VWS:
+				{
+					system("explorer \"https://github.com/BluBloos/Pokemon-Demo/wiki/Supplementary-Tools-(only-on-native-Windows-build)#tile_map_editor\"");
+				}
+				break;
 				default:
 				{
 					SwitchViewingMode( LOWORD(wParam) );
-				}break;
+				}
+				break;
 			}
 		}break;
 		case WM_DESTROY:
@@ -402,13 +411,12 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hView, "View");
 	AppendMenu(hMenubar, MF_POPUP, (UINT_PTR)hHelp, "Help");
     
-	AppendMenu(hFile, MF_STRING, ID_Save, "Save");
-	AppendMenu(hFile, MF_STRING, ID_Load, "Load");
 	AppendMenu(hFile, MF_STRING, ID_Exit, "Exit");
     
-	AppendMenu(hEdit, MF_STRING, ID_Undo, "Undo");
-	AppendMenu(hEdit, MF_STRING, ID_Redo, "Redo");
-	AppendMenu(hEdit, MF_STRING, ID_Clear, "Clear");
+	// AppendMenu(hEdit, MF_STRING, ID_Undo, "Undo");
+	// AppendMenu(hEdit, MF_STRING, ID_Redo, "Redo");
+	// AppendMenu(hEdit, MF_STRING, ID_Clear, "Clear");
+
 	AppendMenu(hEdit, MF_STRING, ID_NextBrush, "Next Brush");
 	AppendMenu(hEdit, MF_STRING | MF_CHECKED, ID_Texture, "Texture Override");
 	AppendMenu(hEdit, MF_STRING | MF_UNCHECKED, ID_Eraser, "Eraser");
