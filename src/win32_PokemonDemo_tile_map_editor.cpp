@@ -18,7 +18,7 @@
 #define ID_Layer1 10
 #define ID_Layer2 11
 #define ID_Eraser 12
-#define ID_Transparency 13
+//#define ID_Transparency 13
 #define ID_AbovePlayer 14
 #define ID_VWS 15 
 
@@ -180,7 +180,7 @@ internal void SwitchViewingMode(short ViewingModeID)
 				if (ViewingMode & TRANSPARENCY)
 				{
 					ViewingMode = ViewingMode - TRANSPARENCY;
-					ModifyMenu(hView, ID_Transparency, MF_BYCOMMAND | MF_UNCHECKED | MF_STRING, ID_Transparency, "Transparency");
+					//ModifyMenu(hView, ID_Transparency, MF_BYCOMMAND | MF_UNCHECKED | MF_STRING, ID_Transparency, "Transparency");
 				}
 				if (ViewingMode & ABOVEPLAYER)
 				{
@@ -189,7 +189,7 @@ internal void SwitchViewingMode(short ViewingModeID)
 				}
 			}
 		}break;
-		case ID_Transparency:
+		/*case ID_Transparency:
 		{
 			if (ViewingMode & TRANSPARENCY)
 			{
@@ -211,7 +211,8 @@ internal void SwitchViewingMode(short ViewingModeID)
 					ModifyMenu(hView, ID_AbovePlayer, MF_BYCOMMAND | MF_UNCHECKED | MF_STRING, ID_AbovePlayer, "Above Player");
 				}
 			}
-		}break;
+		}
+		break;*/
 		case ID_AbovePlayer:
 		{
 			if (ViewingMode & ABOVEPLAYER)
@@ -231,7 +232,7 @@ internal void SwitchViewingMode(short ViewingModeID)
 				if (ViewingMode & TRANSPARENCY)
 				{
 					ViewingMode = ViewingMode - TRANSPARENCY;
-					ModifyMenu(hView, ID_Transparency, MF_BYCOMMAND | MF_UNCHECKED | MF_STRING, ID_Transparency, "Transparency");
+					//ModifyMenu(hView, ID_Transparency, MF_BYCOMMAND | MF_UNCHECKED | MF_STRING, ID_Transparency, "Transparency");
 				}
 			}
 		}break;
@@ -422,7 +423,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	AppendMenu(hEdit, MF_STRING | MF_UNCHECKED, ID_Eraser, "Eraser");
     
 	AppendMenu(hView, MF_UNCHECKED | MF_STRING, ID_Walkable, "Walkable");
-	AppendMenu(hView, MF_UNCHECKED | MF_STRING, ID_Transparency, "Transparency");
+	//AppendMenu(hView, MF_UNCHECKED | MF_STRING, ID_Transparency, "Transparency");
 	AppendMenu(hView, MF_UNCHECKED | MF_STRING, ID_AbovePlayer, "Above Player");
 	AppendMenu(hView, MF_CHECKED | MF_STRING, ID_Layer1, "Layer 1");
 	AppendMenu(hView, MF_UNCHECKED | MF_STRING, ID_Layer2, "Layer 2");
@@ -432,7 +433,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 	SetMenuItemBitmaps(hView, ID_Walkable, MF_BYCOMMAND, 0, 0);
 	SetMenuItemBitmaps(hView, ID_Layer1, MF_BYCOMMAND, 0, 0);
 	SetMenuItemBitmaps(hView, ID_Layer2, MF_BYCOMMAND, 0, 0);
-	SetMenuItemBitmaps(hView, ID_Transparency, MF_BYCOMMAND, 0, 0);
+	//SetMenuItemBitmaps(hView, ID_Transparency, MF_BYCOMMAND, 0, 0);
 	SetMenuItemBitmaps(hView, ID_AbovePlayer, MF_BYCOMMAND, 0, 0);
     
 	AppendMenu(hHelp, MF_STRING, ID_VWS, "Visit website"); 
@@ -691,8 +692,8 @@ int CALLBACK WinMain(HINSTANCE Instance,
 										Tile.AbovePlayer = 0;
 									}
 								}
-								else
-								{
+								else {
+									// not eraser.
 									if (TextureOverride)
 									{
 										if (ViewingMode & LAYER1)

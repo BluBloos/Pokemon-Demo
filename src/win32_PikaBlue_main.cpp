@@ -279,7 +279,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 					TryOpenLoadDialog = false;
 				}
                 
-				GameUpdateRender(&GameMemory, &GameBuffer, NewInput); //update and render the game
+				GameUpdateRender(&GameMemory, &GameBuffer, NewInput, RGB); //update and render the game
                 
 				//force a frame rate
 				LARGE_INTEGER WorkCounter = Win32GetWallClock();
