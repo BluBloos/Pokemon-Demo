@@ -71,9 +71,9 @@ static void UpdateAndRenderProxy(ae::game_memory_t *gameMemory)
 
     game_user_input Input = {};
 
-    // TODO:
-    Input.MouseButtons[0].EndedDown = userInput.mouseLBttnDown;
-    Input.MouseButtons[1].EndedDown = userInput.mouseRBttnDown;
+    // NOTE: PokemonDemo does not use the mouse.
+    //Input.MouseButtons[0].EndedDown = userInput.mouseLBttnDown;
+    //Input.MouseButtons[1].EndedDown = userInput.mouseRBttnDown;
 
     Input.MouseX = userInput.mouseX;
     Input.MouseY = userInput.mouseY;
@@ -83,8 +83,43 @@ static void UpdateAndRenderProxy(ae::game_memory_t *gameMemory)
     Input.BaseFilePath = (char*)getRuntimeExeDirPathPath;
     assert(Input.BaseFilePath != NULL);
 
-    // TODO:
-    Input.GamepadInput;
+    auto &keyboard = Input.GamepadInput[1]; // Has 2. So 2 controllers??
+    // 0 = controller.
+    // 1 = keyboard.
+    // In PokemonDemo seems like the keyboard is virtualized as a gamepad.
+
+    // DebugButton[0] = toggle fullscreen button.
+    // DebugButton[1] = the Z key.
+    // the Right and Left map to in battle.
+    // Up and Down map to movement (along with left and right).
+
+    // NOTE: the below stuff is sort of a hack.
+    // we are likely to make the automata engine input system better.
+    // but for now, this is OK.
+
+    static bool zBefore = false;
+    static bool rBefore = false;
+    static bool lBefore = false;
+    static bool uBefore = false;
+    static bool dBefore = false;
+
+    keyboard.DebugButtons[1].EndedDown = userInput.keyDown[ae::GAME_KEY_Z];
+    keyboard.Right.EndedDown = userInput.keyDown[ae::GAME_KEY_D];
+    keyboard.Left.EndedDown = userInput.keyDown[ae::GAME_KEY_A];
+    keyboard.Up.EndedDown = userInput.keyDown[ae::GAME_KEY_W];
+    keyboard.Down.EndedDown = userInput.keyDown[ae::GAME_KEY_S];
+
+    keyboard.DebugButtons[1].HalfTransitionCount = !!(zBefore != keyboard.DebugButtons[1].EndedDown);
+    keyboard.Right.HalfTransitionCount = !!(rBefore != keyboard.Right.EndedDown);
+    keyboard.Left.HalfTransitionCount = !!(lBefore != keyboard.Left.EndedDown);
+    keyboard.Up.HalfTransitionCount = !!(uBefore != keyboard.Up.EndedDown);
+    keyboard.Down.HalfTransitionCount = !!(dBefore != keyboard.Down.EndedDown);
+
+    zBefore = keyboard.DebugButtons[1].EndedDown;
+    rBefore = keyboard.Right.EndedDown;
+    lBefore = keyboard.Left.EndedDown;
+    uBefore = keyboard.Up.EndedDown;
+    dBefore = keyboard.Down.EndedDown;
 
     ColorMode gameColorMode = BGR; // is this right?
     GameUpdateRender(&Memory, &buffer, &Input, gameColorMode);
@@ -139,3 +174,8 @@ void ae::OnVoiceBufferEnd(ae::game_memory_t* gameMemory, intptr_t voiceHandle)
 {
 
 }
+
+// TODO: after not looking at Pokemon Demo in a while, looks like the docs
+// for this proj can be improved.
+// for example, the layout of buttons and mouse in the game_user_input struct
+// is not well-defined at all.
