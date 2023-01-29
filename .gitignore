@@ -5,3 +5,4 @@ build/windows
 Data/.DS_Store
 .DS_Store
 Data/SaveData.sav
+Data/TileChunk.chunk
