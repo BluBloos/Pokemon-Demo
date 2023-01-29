@@ -2,7 +2,9 @@ Code/*.o
 build/raylib/surge/
 build/macOS
 build/windows
+build/automata-engine
 Data/.DS_Store
 .DS_Store
 Data/SaveData.sav
 Data/TileChunk.chunk
+gist/github/*

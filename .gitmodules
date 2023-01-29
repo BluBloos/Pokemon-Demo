@@ -4,3 +4,6 @@
 [submodule "emsdk"]
 	path = emsdk
 	url = https://github.com/emscripten-core/emsdk
+[submodule "Automata-Engine"]
+	path = Automata-Engine
+	url = https://github.com/BluBloos/Automata-Engine.git
