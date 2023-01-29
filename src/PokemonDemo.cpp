@@ -606,7 +606,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
         {
             toggle_fullscreen_callback * ToggleFullscreen = Memory->ToggleFullscreen;
             ToggleFullscreen();
-            SaveGame(Memory->DEBUGPlatformWriteEntireFile, GameState, GameCatStrings(Input->BaseFilePath, "Data//SaveData.sav", StringBuffer));
+            //SaveGame(Memory->DEBUGPlatformWriteEntireFile, GameState, GameCatStrings(Input->BaseFilePath, "Data//SaveData.sav", StringBuffer));
         }
         
         GameState->GameTimer += Input->DeltaTime;
