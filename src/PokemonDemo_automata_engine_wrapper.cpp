@@ -48,17 +48,6 @@ static void UpdateAndRenderProxy(ae::game_memory_t *gameMemory)
         Memory.Valid = true;
     }
 
-    Memory.DEBUGPlatformReadEntireFile = ReadEntireFile;
-    Memory.DEBUGPlatformWriteEntireFile = WriteEntireFile;
-    Memory.DEBUGPlatformFreeFileMemory = FreeFileMemory;
-
-    // NOTE: doesn't seem PokemonDemo uses the transient storage.
-    //Memory.TransientStorageSize = 0;
-    //Memory.TransientStorage = NULL;
-
-    // TODO:
-    Memory.ToggleFullscreen = ToggleFullscreen;
-
     game_offscreen_buffer buffer = {};
     buffer.memory = gameMemory->backbufferPixels;
     buffer.width = gameMemory->backbufferWidth;
@@ -135,6 +124,8 @@ void ae::PreInit(ae::game_memory_t *gameMemory)
     ae::defaultHeight = 720;
 }
 
+static intptr_t g_proxyVoice;
+
 void ae::Init(ae::game_memory_t *gameMemory)
 {
 //    ae::game_state_t *gameState = automata_engine::getGameState(gameMemory);
@@ -142,6 +133,29 @@ void ae::Init(ae::game_memory_t *gameMemory)
     ae::platform::getRuntimeExeDirPath((char*)getRuntimeExeDirPathPath, 256);
     Memory.IsInitialized = false;
     Memory.Valid = false;
+
+    g_proxyVoice = ae::platform::createVoice();
+    if (g_proxyVoice == ae::platform::INVALID_VOICE)
+    {
+        PlatformLoggerError("Failed to create proxy voice for PokemonDemo.\n");
+    }
+    //bool voiceSubmitBuffer(intptr_t voiceHandle, void *data, uint32_t size, bool shoudLoop = false);
+    constexpr size_t audioBytesCount = ENGINE_DESIRED_SAMPLES_PER_SECOND * 2;
+    static constexpr char audioBytes[audioBytesCount] = {}; // dummy data
+    ae::platform::voiceSubmitBuffer(
+        g_proxyVoice, (void*)audioBytes, audioBytesCount, true);
+    ae::platform::voicePlayBuffer(g_proxyVoice);
+
+    Memory.DEBUGPlatformReadEntireFile = ReadEntireFile;
+    Memory.DEBUGPlatformWriteEntireFile = WriteEntireFile;
+    Memory.DEBUGPlatformFreeFileMemory = FreeFileMemory;
+
+    // NOTE: doesn't seem PokemonDemo uses the transient storage.
+    //Memory.TransientStorageSize = 0;
+    //Memory.TransientStorage = NULL;
+
+    // TODO:
+    Memory.ToggleFullscreen = ToggleFullscreen;
 
     // TODO:
     // Register a voice that is merely a proxy
@@ -170,13 +184,43 @@ void ae::HandleWindowResize(ae::game_memory *gameMemory, int newWdith, int newHe
 void ae::OnVoiceBufferProcess(ae::game_memory_t* gameMemory, intptr_t voiceHandle, void* dst, void* src,
     uint32_t samplesToWrite, int channels, int bytesPerSample)
 {
-    // TODO:
-    //GameGetSoundSamples
+    Memory.StorageSize = gameMemory->dataBytes;
+    Memory.Storage = gameMemory->data;
+    if (Memory.Storage != NULL)
+    {
+        Memory.Valid = true;
+    }
 
+    game_sound_output_buffer SoundBuffer;
+    SoundBuffer.SamplesPerSecond = ENGINE_DESIRED_SAMPLES_PER_SECOND;
+    SoundBuffer.SampleAmount = samplesToWrite;
+
+    // Pokemon demo expects 16-bit samples.
+    // but OnVoiceBufferProcess works with float.
+    // alloc temp buffer.
+    static constexpr size_t tempBufferSize = ENGINE_DESIRED_SAMPLES_PER_SECOND * 2;
+    static short tempBuffer[tempBufferSize] = {};
+    SoundBuffer.SampleOut = tempBuffer;
+
+    // void GameGetSoundSamples(
+    //     game_memory *Memory, game_sound_output_buffer *SoundBuffer, game_user_input *Input,bool mono)
+    GameGetSoundSamples(&Memory, &SoundBuffer, NULL, false);
+
+    // copy tempBuffer to dst.
+    float *dstPtr = (float *)dst;
+    for (size_t i = 0; i < samplesToWrite; ++i)
+    {
+        *dstPtr++ = (float)tempBuffer[i*2] / 32768.0f;
+        *dstPtr++ = (float)tempBuffer[i*2+1] / 32768.0f;
+    }
+
+    // NOTE: currently, PokemonDemo does not use Input in the sound callback.
+    // So we are good to go for just not setting this.
 }
 
 void ae::OnVoiceBufferEnd(ae::game_memory_t* gameMemory, intptr_t voiceHandle)
 {
+    
 
 }
 
