@@ -22,12 +22,12 @@ static debug_read_file_result ReadEntireFile(char *FileName)
     return result;
 }
 
-// TODO: Currently, automata engine does not offer this sort of thing.
-// returns byes written.
 static int WriteEntireFile(char *FileName, int MemorySize, void *Memory)
 {
-    int result = MemorySize;
-    return result;
+    // crude conversion to const char*.
+    // but it is OK.
+    return ae::platform::writeEntireFile(
+        (const char*)FileName, Memory, MemorySize);
 }
 
 static void FreeFileMemory(void *Memory)
@@ -128,6 +128,11 @@ static void UpdateAndRenderProxy(ae::game_memory_t *gameMemory)
 void ae::PreInit(ae::game_memory_t *gameMemory)
 {
     ae::defaultWindowName = "Pokemon Demo";
+    
+    // Pokemon demo assumes a backbuffer of this precise size.
+    // Also that the backbuffer size never changes.
+    ae::defaultWidth = 1280;
+    ae::defaultHeight = 720;
 }
 
 void ae::Init(ae::game_memory_t *gameMemory)
