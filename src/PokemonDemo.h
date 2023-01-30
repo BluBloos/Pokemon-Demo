@@ -5,14 +5,11 @@
 #define INLINE
 #endif
 
-#ifdef __cplusplus
-#define PokeZeroMem(var) var = {}
-#else
+#include <cstdint> // for things like uint32_t
 #include <string.h>
 // sizeof the var works, it uses the type of the var.
 // keep in mind that if you pass a pointer, then it will get the size of the pointer, not the thing it pointss to
 #define PokeZeroMem(var) memset(&var, 0, sizeof(var))
-#endif
 
 #if POKEMON_DEMO_DEBUG
 #define Assert(Expression) if (!(Expression)) {*(int *)0 = 0;}
@@ -387,6 +384,22 @@ internal void *PushSize(memory_arena *Arena, size_t SizeOfStruct)
 	return Result;
 }
 
+// Atomic Push/Pop is the caller saying that they can guarentee that they
+// will be the only access to the arena between calls to Push and Pop.
+// this is some high trust kind of stuf, because caller needs to give
+// same SizeOfStruct to Pop as they did to Push.
+internal void *AtomicPushSize(memory_arena *Arena, size_t SizeOfStruct)
+{
+	void *Result = PushSize(Arena, SizeOfStruct);
+	memset(Result, 0, SizeOfStruct);
+	return Result;
+}
+internal void AtomicPopSize(memory_arena *Arena, size_t SizeOfStruct)
+{
+	Assert( (Arena->Used - SizeOfStruct) >= 0 );
+	Arena->Used -= SizeOfStruct;
+}
+
 //NOTE(Noah): the #define is a macro and when the new 
 //definition is found in our code the old definition is literally
 //pasted in no joke fam. And we can even have very useful things like 
@@ -497,9 +510,6 @@ typedef struct
 
 #define LUT_AMOUNT 4
 
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
-
 typedef struct 
 {
 	memory_arena WorldArena;
@@ -511,9 +521,8 @@ typedef struct
 	vector2f CameraPos;
     
 	//NOTE: The field below should be provided by the game
-	unsigned int BackBufferPixels[SCREEN_WIDTH][SCREEN_HEIGHT];
+	//unsigned int BackBufferPixels[SCREEN_WIDTH][SCREEN_HEIGHT];
 	game_offscreen_buffer *GameBuffer;
-	game_offscreen_buffer BackBuffer2;
 	game_offscreen_buffer BackBuffer;
 	shader Shader;
     

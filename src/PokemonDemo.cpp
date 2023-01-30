@@ -206,9 +206,10 @@ internal void LoadSaveGame(debug_platform_read_entire_file *ReadEntireFile, game
 
 //////////////
 
-//NOTE: Can we optimize this function?
 internal void CloneBuffer(game_offscreen_buffer *source, game_offscreen_buffer *dest)
 {
+    memcpy(dest->memory, source->memory, source->width * source->height * source->BytesPerPixel);
+    /*
     unsigned int *SourcePixel = (unsigned int *)source->memory;
     unsigned int *DestPixel = (unsigned int *)dest->memory; 
     unsigned int PixelCount = source->width * source->height;
@@ -216,6 +217,7 @@ internal void CloneBuffer(game_offscreen_buffer *source, game_offscreen_buffer *
     {
         *DestPixel++ = *SourcePixel++;
     }
+    */
 }
 
 //Hm?
@@ -234,6 +236,16 @@ internal void PapyrusFunction(void *Data, unsigned int Param)
     
 }
 
+internal void AllocBackBufferIntoGameState(game_state *GameState)
+{
+    memory_arena &Arena = GameState->WorldArena;
+    GameState->BackBuffer.memory = AtomicPushSize(
+        &Arena, GameState->GameBuffer->width * GameState->GameBuffer->height * sizeof(unsigned int));
+    GameState->BackBuffer.width = GameState->GameBuffer->width;
+    GameState->BackBuffer.height = GameState->GameBuffer->height;
+    GameState->BackBuffer.pitch = GameState->GameBuffer->pitch;
+}
+
 // NOTE: It's alright to have the arceus event coded like this. However I think its important that we restructure 
 // how posponed functions work. I think we need to remodel the Param as a generic linked list.
 internal void ArceusEvent(void *Data, unsigned int Param)
@@ -241,6 +253,7 @@ internal void ArceusEvent(void *Data, unsigned int Param)
     game_state *GameState = (game_state *)Data;
     SeedRandom(GameState);
     PlaySoundEffect(GameState, GameState->SoundEffects[7], true, 1.0f); //start playing the areus theme
+    AllocBackBufferIntoGameState(GameState);
     CloneBuffer(GameState->GameBuffer, &GameState->BackBuffer);
     InstantiateShader(GameState, &GameState->BackBuffer, GameState->LUT[0], 1.5f);
     SetPauseState(GameState, 2.0f);
@@ -587,12 +600,6 @@ GAME_UPDATE_RENDER(GameUpdateRender)
             CloneString("POKEDEX", GameState->UserInterfaces[1].Elements[6].String, 256);
             CloneString("151", GameState->UserInterfaces[1].Elements[7].String, 256);
             
-            //initialize the back buffer who at the current moment has one setting
-            GameState->BackBuffer.memory = GameState->BackBufferPixels;
-            GameState->BackBuffer.width = SCREEN_WIDTH;
-            GameState->BackBuffer.height = SCREEN_HEIGHT;
-            GameState->BackBuffer.BytesPerPixel = 4;
-            
             Memory->IsInitialized = true;
         } // done memory initialization
         
@@ -888,6 +895,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         
                         GameState->GameState = EXITBATTLE; 
                         
+                        AllocBackBufferIntoGameState(GameState);
                         CloneBuffer(buffer, &GameState->BackBuffer);
                         InstantiateShader(GameState, &GameState->BackBuffer, GameState->LUT[2], 0.5f);
                         SetPauseState(GameState, 0.7f);
@@ -901,6 +909,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                         
                         GameState->GameState = BLACKEDOUT;
                         
+                        AllocBackBufferIntoGameState(GameState);
                         CloneBuffer(buffer, &GameState->BackBuffer);
                         InstantiateShader(GameState, &GameState->BackBuffer, GameState->LUT[2], 0.3f);
                         SetPauseState(GameState, 0.5f);
@@ -1750,6 +1759,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                             GameState->BufferPokemon[0].Gender = 1;
                             GameState->BufferPokemon[0].HP = GetPokemonStatHP(GameState, &GameState->BufferPokemon[0]);
                             
+                            AllocBackBufferIntoGameState(GameState);
                             CloneBuffer(buffer, &GameState->BackBuffer);
                             InstantiateShader(GameState, &GameState->BackBuffer, GameState->LUT[0], 1.5f);
                             SetPauseState(GameState, 2.0f);
@@ -1861,13 +1871,18 @@ GAME_UPDATE_RENDER(GameUpdateRender)
         // here, right below the pause we can do some shader code because I allow shader code to execute outside of the pause
         if (GameState->Shader.Active)
         {
-            if (!GameState->Shader.source2)
-            {
-                ExecuteShader(buffer, &GameState->Shader, Input->DeltaTime);
-            }
-            else
+#if 0
+            // old code block.
+            if (GameState->Shader.source2)
             {
                 ExecuteShader2(buffer, &GameState->Shader, Input->DeltaTime);
+            }
+            else
+#endif
+            {
+                // TODO: Shouldn't the shader store a ref to the allocator
+                // for the source that it owns?
+                ExecuteShader(GameState, buffer, &GameState->Shader, Input->DeltaTime);
             }
         }
     } // end of test for if the game memory exists
