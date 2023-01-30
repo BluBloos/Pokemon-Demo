@@ -5,7 +5,7 @@
 #define INLINE
 #endif
 
-#include <cstdint> // for things like uint32_t
+#include <stdint.h> // for things like uint32_t
 #include <string.h>
 // sizeof the var works, it uses the type of the var.
 // keep in mind that if you pass a pointer, then it will get the size of the pointer, not the thing it pointss to
