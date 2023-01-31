@@ -1907,23 +1907,40 @@ GAME_GET_SOUND_SAMPLES(GameGetSoundSamples)
             for (int x = 0; x < GameState->SoundQueue.Count; x++)
             {
                 sound_item *SoundItem = &GameState->SoundQueue.SoundItems[x];
-                OverlaySound += (int)SoundItem->Sound.SampleData[0][SoundItem->SoundIndex++ % SoundItem->Sound.SampleCount];
                 
-                if (SoundItem->SoundIndex % SoundItem->Sound.SampleCount == 0)
+                // TODO: we check here for SampleCount == 0 because it may be that there was some error loading
+                // the sound. Of course, this means there was a bug...
+                if ( (SoundItem->Sound.SampleCount == 0) || 
+                     (SoundItem->SoundIndex == (SoundItem->Sound.SampleCount-1)) )
                 {
+                    if (SoundItem->Sound.SampleCount == 0)
+                    {
+#ifdef _WIN32
+                        // TODO: add this warning.
+                        //OutputDebugStringA("WARNING! a sound may have not loaded proper");
+#endif
+                    }
                     //kill the sound because its done playing!
                     if (!SoundItem->Loop)
                     {
                         PopSound(GameState, SoundItem->QueueIndex);
                     }
                 }
+                else
+                {
+                    OverlaySound += (int)SoundItem->Sound.SampleData[0][
+                        SoundItem->SoundIndex++ % SoundItem->Sound.SampleCount];
+                }                
             }
-            
+
+#if 0
             if (GameState->GainingExp)
             {
                 //OverlaySound += PlayRisingSine(Input->DeltaTime, GameState->CurrentSineIndex++, SoundBuffer->SamplesPerSecond);
             }
-            
+#endif
+
+            // TODO: this is crude. What happened to mixing and mastering ????
             int Value = OverlaySound;
             
             if (Value > MAX_SIGNED_SHORT)
