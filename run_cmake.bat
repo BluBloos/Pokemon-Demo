@@ -1,1 +1,1 @@
-cmake -S . -B ./build/automata-engine
+cmake -S . -B ./build/automata-engine %*

@@ -16,7 +16,7 @@ static debug_read_file_result ReadEntireFile(char *FileName)
     // but it is OK.
     // the reason AE does this is to store the fileName.
     // but here, we never access it again.
-    ae::loaded_file loadedFile = ae::platform::readEntireFile((const char*)FileName);
+    ae::loaded_file_t loadedFile = ae::platform::readEntireFile((const char*)FileName);
     result.Contents = loadedFile.contents;
     result.ContentSize = loadedFile.contentSize;
     return result;
@@ -140,7 +140,7 @@ void ae::Init(ae::game_memory_t *gameMemory)
         PlatformLoggerError("Failed to create proxy voice for PokemonDemo.\n");
     }
     //bool voiceSubmitBuffer(intptr_t voiceHandle, void *data, uint32_t size, bool shoudLoop = false);
-    constexpr size_t audioBytesCount = ENGINE_DESIRED_SAMPLES_PER_SECOND * 2;
+    constexpr size_t audioBytesCount = ae::io::ENGINE_DESIRED_SAMPLES_PER_SECOND * 2;
     static constexpr char audioBytes[audioBytesCount] = {}; // dummy data
     ae::platform::voiceSubmitBuffer(
         g_proxyVoice, (void*)audioBytes, audioBytesCount, true);
@@ -173,7 +173,7 @@ void ae::Close(ae::game_memory_t *gameMemory)
     // plus it has game_memory_t.
 }
 
-void ae::HandleWindowResize(ae::game_memory *gameMemory, int newWdith, int newHeight)
+void ae::HandleWindowResize(ae::game_memory_t *gameMemory, int newWdith, int newHeight)
 {
     // pokemon demo has no special behaviour for window resize.
     // the backbuffer has whatever width/height it has and that is that.
@@ -192,13 +192,13 @@ void ae::OnVoiceBufferProcess(ae::game_memory_t* gameMemory, intptr_t voiceHandl
     }
 
     game_sound_output_buffer SoundBuffer;
-    SoundBuffer.SamplesPerSecond = ENGINE_DESIRED_SAMPLES_PER_SECOND;
+    SoundBuffer.SamplesPerSecond = ae::io::ENGINE_DESIRED_SAMPLES_PER_SECOND;
     SoundBuffer.SampleAmount = samplesToWrite;
 
     // Pokemon demo expects 16-bit samples.
     // but OnVoiceBufferProcess works with float.
     // alloc temp buffer.
-    static constexpr size_t tempBufferSize = ENGINE_DESIRED_SAMPLES_PER_SECOND * 2;
+    static constexpr size_t tempBufferSize = ae::io::ENGINE_DESIRED_SAMPLES_PER_SECOND * 2;
     static short tempBuffer[tempBufferSize] = {};
     SoundBuffer.SampleOut = tempBuffer;
 
