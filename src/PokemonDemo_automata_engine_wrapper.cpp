@@ -137,7 +137,7 @@ void ae::Init(ae::game_memory_t *gameMemory)
     g_proxyVoice = ae::platform::createVoice();
     if (g_proxyVoice == ae::platform::INVALID_VOICE)
     {
-        PlatformLoggerError("Failed to create proxy voice for PokemonDemo.\n");
+        AELoggerError("Failed to create proxy voice for PokemonDemo.\n");
     }
     //bool voiceSubmitBuffer(intptr_t voiceHandle, void *data, uint32_t size, bool shoudLoop = false);
     constexpr size_t audioBytesCount = ae::io::ENGINE_DESIRED_SAMPLES_PER_SECOND * 2;
