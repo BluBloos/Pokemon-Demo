@@ -521,7 +521,7 @@ typedef struct
 	//I think I like these so I want to keep them
 	pokemon_database_data PokemonDatabase[POKEMON_DATABASE_LENGTH];
 	float NatureDatabase[25][6];
-	float TypeMatchupDatabase[18][18];
+	unsigned int TypeMatchupDatabase[18][18];
 	game_ui_scene UserInterfaces[256]; //typically we dafault using 256 elements
 	////////
 	

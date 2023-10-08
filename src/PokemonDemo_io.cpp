@@ -281,7 +281,10 @@ internal unsigned int ReadLines(debug_platform_read_entire_file *ReadEntireFile,
 				*Buffer++ = *Scan;
 			}
 			Scan++;
-			if ( *(unsigned short *)Scan == (unsigned short)(('\n' << 8) | '\r') ) 
+			if (*Scan == ('\n')) {
+				LookingForLineEnd = false;
+				Scan += 1;
+			} else if ( *(unsigned short *)Scan == (unsigned short)(('\n' << 8) | '\r') ) 
 			{
 				LookingForLineEnd = false;
 				Scan += 2;
@@ -361,6 +364,21 @@ internal void LoadFloatMatrix(float *Dest, char **Lines, unsigned int AmountOfLi
 			Dest[y * LineCount + x] = Line[x];
 		}
         
+	}
+}
+
+internal void LoadIntegerMatrix(unsigned int *Dest, char **Lines, unsigned int AmountOfLines)
+{
+	// char StringBuffer[256];
+	for (unsigned int y = 0; y < AmountOfLines; y++)
+	{
+		// split the line
+		unsigned int Line[256];
+		unsigned int LineCount = SplitLineToInt(Lines[y],Line);
+		for (unsigned int x = 0; x < LineCount; x++)
+		{
+			Dest[y * LineCount + x] = Line[x];
+		}
 	}
 }
 

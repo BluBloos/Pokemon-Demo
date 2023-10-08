@@ -362,7 +362,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
             //load in the type matchup database
             char *Lines[256];
             unsigned int LineAmount = ReadLines(Memory->DEBUGPlatformReadEntireFile, &GameState->WorldArena, Input->BaseFilePath, "Data//TypeMatchupDatabase.txt", Lines);
-            LoadFloatMatrix(&GameState->TypeMatchupDatabase[0][0], Lines, LineAmount);
+            LoadIntegerMatrix(&GameState->TypeMatchupDatabase[0][0], Lines, LineAmount);
             
             //load in LUTS for shader
             GameState->LUT[0] = DEBUGLoadBMP(Memory->DEBUGPlatformReadEntireFile, GameCatStrings(Input->BaseFilePath, "Data//LUT1.bmp", StringBuffer));

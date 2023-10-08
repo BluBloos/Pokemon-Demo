@@ -303,23 +303,30 @@ internal float CalcDamage(game_state *GameState, battle_pokemon Attacker, pokemo
 	pokemon_database_data AttackerData = GetPokemonDataFromID(GameState->PokemonDatabase, Attacker.Pokemon->PokemonID);
 	pokemon_database_data TargetData = GetPokemonDataFromID(GameState->PokemonDatabase, Target.Pokemon->PokemonID);
 	float STAB = ( (AttackerData.Types[0] == PokemonMove.Type) | (AttackerData.Types[1] == PokemonMove.Type) )?2.0f: 1.0f; //same type of move as user type bonus
-	float TypeBonus = GameState->TypeMatchupDatabase[PokemonMove.Type][TargetData.Types[0]] * 
-		GameState->TypeMatchupDatabase[PokemonMove.Type][TargetData.Types[1]];
+	
+	// TODO: so what we are doing here is just not the play. we can fix this by changing the value type of the type matchup database.
+	// we can just have this encode some integer which directly gives the code of NOTEFFECTIVE, NOTVERYEFFECTIVE, etc.
+	
+	unsigned int TypeBonus1 = GameState->TypeMatchupDatabase[PokemonMove.Type][TargetData.Types[0]];
+	unsigned int TypeBonus2 = GameState->TypeMatchupDatabase[PokemonMove.Type][TargetData.Types[1]];
+
+	unsigned int FlagsTable[4][4] = {
+		{ NOTEFFECTIVE, NOTEFFECTIVE,     NOTEFFECTIVE,     NOTEFFECTIVE },   // 0x
+		{ NOTEFFECTIVE, NOTVERYEFFECTIVE, NOTVERYEFFECTIVE, 0 },              // 0.5x
+		{ NOTEFFECTIVE, NOTVERYEFFECTIVE, 0,                SUPEREFFECTIVE },  // 1x
+		{ NOTEFFECTIVE, 0,                SUPEREFFECTIVE,   SUPEREFFECTIVE }, // 2x
+	};
+
+	float DamageModifierTable[4][4] = {
+		{ 0.f, 0.f,   0.f,  0.f }, // 0x
+		{ 0.f, 0.25f, 0.5f, 1.f }, // 0.5x
+		{ 0.f, 0.5f,  1.f,  2.f },  // 1x
+		{ 0.f, 1.f,   2.f,  4.f },  // 2x
+	};
+
+	*Flags |= FlagsTable[TypeBonus1][TypeBonus2];
     
-	if ( AreFloatsEqual(TypeBonus, 0.0f) )
-	{
-		*Flags = *Flags | NOTEFFECTIVE;
-	}
-	else if ( TypeBonus < 1.0f )
-	{
-		*Flags = *Flags | NOTVERYEFFECTIVE;
-	} 
-	else if ( AreFloatsEqual(TypeBonus, 2.0f) | (TypeBonus > 2.0f) )
-	{
-		*Flags = *Flags | SUPEREFFECTIVE;
-	}
-    
-	float Modifier = Critical * Random * STAB * TypeBonus;  
+	float Modifier = Critical * Random * STAB * DamageModifierTable[TypeBonus1][TypeBonus2];  
 	float Damage = (FloorFloat(FloorFloat(FloorFloat(2.0f * Level / 5.0f + 2.0f) * PokemonMove.BasePower * A / D) / 50.0f) + 2.0f) * Modifier;
 	return Damage;
 }
