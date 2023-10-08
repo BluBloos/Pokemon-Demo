@@ -732,12 +732,17 @@ internal void DrawNPC(game_offscreen_buffer *buffer, entity_npc *Entity, vector2
                      ScreenPos.Y, Flip, PlayerScale);
 }
 
-internal void ExecuteShader(game_offscreen_buffer *dest, shader *Shader, float DeltaTime)
+internal void ExecuteShader(
+    game_state *GameState, game_offscreen_buffer *dest, shader *Shader, float DeltaTime)
 {
     Shader->ActiveTime += DeltaTime;
     if (Shader->ActiveTime > Shader->Length)
     {
         Shader->Active = false;
+        // dealloc temp source that shader owns.
+        memory_arena &Arena = GameState->WorldArena;
+        uint32_t SourceSize = Shader->source->width * Shader->source->height * Shader->source->BytesPerPixel;
+        AtomicPopSize(&Arena, SourceSize);
     }
     else
     {

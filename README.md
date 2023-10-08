@@ -42,7 +42,7 @@ This will generate all needed files in build/macOS. To run the game, use
 ## Windows
 The windows build does not use raylib. The platform layer is written with native win32 code.
 
-Thus, you will need to install <a href="https://visualstudio.microsoft.com/vs/">Visual Studio</a>, if you haven't already. At the time of writing, the latest version is 2019, so I cannot guarentee proper building for any subsequent versions. Also note that if your visual studio version is different than 2019, you will need to change *shell.bat* accordingly.   
+Thus, you will need to install <a href="https://visualstudio.microsoft.com/vs/">Visual Studio</a>, if you haven't already. At the time of writing, the latest version is 2022, so I cannot guarentee proper building for any subsequent versions. Also note that if your visual studio version is different than 2022, you will need to change *shell.bat* accordingly.   
 
 After installing visual studio, clone this project and run the following commands (in command prompt, not powershell). This will set up the visual studio compiler for use on the command line via the "cl" command. The *build.bat* script takes care of compiling the platform layer and the game.dll
 ```
