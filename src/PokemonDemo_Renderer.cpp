@@ -740,9 +740,9 @@ internal void ExecuteShader(
     {
         Shader->Active = false;
         // dealloc temp source that shader owns.
-        memory_arena &Arena = GameState->WorldArena;
+        memory_arena *Arena = &GameState->WorldArena;
         uint32_t SourceSize = Shader->source->width * Shader->source->height * Shader->source->BytesPerPixel;
-        AtomicPopSize(&Arena, SourceSize);
+        AtomicPopSize(Arena, SourceSize);
     }
     else
     {

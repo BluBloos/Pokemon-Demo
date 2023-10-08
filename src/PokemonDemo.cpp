@@ -238,9 +238,9 @@ internal void PapyrusFunction(void *Data, unsigned int Param)
 
 internal void AllocBackBufferIntoGameState(game_state *GameState)
 {
-    memory_arena &Arena = GameState->WorldArena;
+    memory_arena *Arena = &GameState->WorldArena;
     GameState->BackBuffer.memory = AtomicPushSize(
-        &Arena, GameState->GameBuffer->width * GameState->GameBuffer->height * sizeof(unsigned int));
+        Arena, GameState->GameBuffer->width * GameState->GameBuffer->height * sizeof(unsigned int));
     GameState->BackBuffer.width = GameState->GameBuffer->width;
     GameState->BackBuffer.height = GameState->GameBuffer->height;
     GameState->BackBuffer.pitch = GameState->GameBuffer->pitch;
