@@ -4,14 +4,14 @@
 
 Small pokemon game made completely from scratch and in C, just like @ <a href="https://handmadehero.org/">Handmade Hero</a>. Disclaimer: I do not own any of the assets used in this project (images and sound used), these are the intellectual property of <a href="https://www.nintendo.com/">Nintendo</a>.
 
-To play the game, you can head over to https://pokemondemo.surge.sh/
+To play the game, you can head over to https://pokemondemo.ncabral.ca/.
 
 
 # Steps for Building
 
 ## Web
 
-The platform layer of the project has been rewritten via the popular https://www.raylib.com/ library to support building for the web. The following instructions assume that the host machine is Unix-like. They have been tested on macOS.
+The platform layer of the project has been rewritten via the popular https://www.raylib.com library to support building for the web. The following instructions assume that the host machine is Unix-like. They have been tested on macOS.
 
 ```bash
 ./build_web.sh
