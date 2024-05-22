@@ -6,7 +6,7 @@ therefore does not reflect my current expertise. I have made minor updates to
 the project since then, but the majority of the codebase remains unchanged from
 the original version.
 
-Video game (Pokemon Clone) made completely from scratch and in C, just like @ <a href="https://handmadehero.org/">Handmade Hero</a>. Disclaimer: I do not own any of the assets used in this project (images and sound used), these are the intellectual property of <a href="https://www.nintendo.com/">Nintendo</a>.
+Video game (Pokemon Clone) made completely from scratch and in C, just like @ <a href="https://handmadehero.org/">Handmade Hero</a>. Disclaimer: I do not own any of the assets used in this project (images and sound used); these are the intellectual property of <a href="https://www.nintendo.com/">Nintendo</a>.
 
 To play the game, you can head over to https://pokemondemo.ncabral.ca/.
 
