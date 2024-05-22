@@ -1,7 +1,7 @@
 
 # Pokemon-Demo <img src="https://emojis.slackmojis.com/emojis/images/1479080836/1363/eevee.gif?1479080836" />
 
-Note to Reader: This project was developed when I was in high school and
+> Note to Reader: This project was developed when I was in high school and
 therefore does not reflect my current expertise. I have made minor updates to
 the project since then, but the majority of the codebase remains unchanged from
 the original version.
