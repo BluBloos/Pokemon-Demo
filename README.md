@@ -1,10 +1,61 @@
-![image](https://user-images.githubusercontent.com/38915815/134362903-acc868d5-98be-452b-a483-94594024f606.png)
 
 # Pokemon-Demo <img src="https://emojis.slackmojis.com/emojis/images/1479080836/1363/eevee.gif?1479080836" />
 
-Small pokemon game made completely from scratch and in C, just like @ <a href="https://handmadehero.org/">Handmade Hero</a>. Disclaimer: I do not own any of the assets used in this project (images and sound used), these are the intellectual property of <a href="https://www.nintendo.com/">Nintendo</a>.
+Note to Reader: This project was developed when I was in high school and
+therefore does not reflect my current expertise. I have made minor updates to
+the project since then, but the majority of the codebase remains unchanged from
+the original version.
+
+Video game (Pokemon Clone) made completely from scratch and in C, just like @ <a href="https://handmadehero.org/">Handmade Hero</a>. Disclaimer: I do not own any of the assets used in this project (images and sound used), these are the intellectual property of <a href="https://www.nintendo.com/">Nintendo</a>.
 
 To play the game, you can head over to https://pokemondemo.ncabral.ca/.
+
+![image](https://user-images.githubusercontent.com/38915815/134362903-acc868d5-98be-452b-a483-94594024f606.png)
+
+# Controls
+- W, A, S, D to control the player. 
+- Z to interact with things (this button can be thought of as equivalent to the
+  A button in most video games).
+- Press F to toggle fullscreen mode.
+- **Only on Windows:** Use L to start a "recording". L again to stop and enter
+  playback of the recording. L again to exit playback and return normal control
+  to the player.
+
+# Features
+
+- Game Modes: includes Overworld, Battle, and Start Menu.
+- Player movement and collision with world.
+- Interactable overworld entities:
+	- NPCs: player two, Mom (who heals your Pokemon).
+	- items: pokeballs, signs, and doors.
+	- overworld Pokemon: Arceus.
+- Wild Pokemon encounters in the tall grass.
+- Smooth overworld camera.
+- Sprite animation: player and Pokemon during battle.
+- GUIs: dialogue box with animated text rendering, battle menus and overlays.
+- Controller support. The controller controls player two.
+- Two easter eggs.
+- Accurate battle mechanics w.r.t. original games.
+- Support for fullscreen animation effects (e.g., when entering a battle).
+- Tilemap rendering including multiple layers.
+- Sound effects and background music.
+- Gain experience points and level up your Pikachu.
+
+## Windows Only
+
+**Hot-reloading:** The game is compiled into a DLL, which allows certain
+portions of the code to be modified and reloaded while the game is still
+running.
+
+**Live Loop Recording:** This feature enables the player to capture a snapshot
+of the current state of the game and record their input actions from that
+moment. Once recorded, the game will replay the recording. This allows for easy
+repetition of actions or sequences in the game, which can be useful for debuggin
+and demonstrations.
+
+**Tools:** I created tools to help manage the game assets. Documentation for
+these tools can be found <a
+href="https://github.com/BluBloos/Pokemon-Demo/wiki/Supplementary-Tools-(only-on-native-Windows-build)">here</a>
 
 
 # Steps for Building
@@ -54,17 +105,3 @@ To run the project
 $ cd build\windows
 $ win32_PokemonDemo.exe
 ```
-
-## Features Specific to Native Windows Build 
-
-**Hot-reloading:** The game compiles as a dll, allowing the platform layer to dynamically load the game.
-
-**Live Loop Recording:** The player takes a snaphot of the game and records subsequent inputs. Then, without them ever pressing another button, the game continues to play back the same sequence. 
-
-Aside from extra features specific to the game itself, **there exists supplementary tools that will only run on a Windows host**. These tools were created to aid in the development of the game itself. Documentation for these tools can be found <a href="https://github.com/BluBloos/Pokemon-Demo/wiki/Supplementary-Tools-(only-on-native-Windows-build)">here</a>
-
-# Controls
-- W, A, S, D to control the player. 
-- Z to interact with things (this button can be thought of as equivalent to the A button in most video games). 
-- Press F to toggle fullscreen mode.
-- **Only on Windows:** Use L to start a "recording". L again to stop and enter playback of the recording. L again to exit playback and return normal control to the player.
