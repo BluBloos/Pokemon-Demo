@@ -12,16 +12,16 @@ pushd build\windows
 
 del *.pdb > NUL 2> NUL
 
-cl %CommonCompilerFlags% -Fmwin32_PokemonDemo.map ..\..\src\win32_PokemonDemo.cpp /link -subsystem:windows,5.1 %CommonLinkerFlags%
+cl %CommonCompilerFlags% -Fmwin32_PokemonDemo.map ..\..\src\win32_PokemonDemo.cpp /link -subsystem:windows,5.2 %CommonLinkerFlags%
 
-cl %CommonCompilerFlags% -FmPokemonDemo.map ..\..\src\PokemonDemo.cpp -LD /link -subsystem:windows,5.1 -PDB:PokemonDemo_%random%.pdb ^
+cl %CommonCompilerFlags% -FmPokemonDemo.map ..\..\src\PokemonDemo.cpp -LD /link -subsystem:windows,5.2 -PDB:PokemonDemo_%random%.pdb ^
     -incremental:no -EXPORT:GameGetSoundSamples -EXPORT:GameUpdateRender
 
 cl %CommonCompilerFlags% -FmPokemonDemoTileEditor.map ..\..\src\win32_PokemonDemo_tile_map_editor.cpp /link ^
-    -subsystem:windows,5.1 %CommonLinkerFlags%
+    -subsystem:windows,5.2 %CommonLinkerFlags%
 
-cl %CommonCompilerFlags% ..\..\src\win32_PikaBlue_Cmd.cpp /link -subsystem:console,5.1 %CommonLinkerFlags%
+cl %CommonCompilerFlags% ..\..\src\win32_PikaBlue_Cmd.cpp /link -subsystem:console,5.2 %CommonLinkerFlags%
 
-cl %CommonCompilerFlags% -DPIKABLUE_UI=1 ..\..\src\win32_PikaBlue_main.cpp /link -subsystem:windows,5.1 %CommonLinkerFlags% Comdlg32.lib
+cl %CommonCompilerFlags% -DPIKABLUE_UI=1 ..\..\src\win32_PikaBlue_main.cpp /link -subsystem:windows,5.2 %CommonLinkerFlags% Comdlg32.lib
 
 popd
