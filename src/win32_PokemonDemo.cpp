@@ -782,7 +782,7 @@ global_variable LONGLONG PerfCountFrequency64;
 internal void Win32OpenConsole()
 {
     int hConHandle;
-    long lStdHandle;
+    intptr_t  stdHandle;
     CONSOLE_SCREEN_BUFFER_INFO coninfo;
     FILE *fp;
     
@@ -800,15 +800,15 @@ internal void Win32OpenConsole()
     // redirect unbuffered STDOUT to the console
     //https://msdn.microsoft.com/en-us/library/bdts1c9x.aspx
     //https://msdn.microsoft.com/en-us/library/88k7d7a7.aspx
-    lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
-    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT); //convert windows handle to c runtime handle
+    stdHandle = reinterpret_cast<intptr_t>(GetStdHandle(STD_OUTPUT_HANDLE));
+    hConHandle = _open_osfhandle(stdHandle, _O_TEXT); //convert windows handle to c runtime handle
     fp = _fdopen( hConHandle, "w" );
     *stdout = *fp;
     //setvbuf( stdout, NULL, _IONBF, 0 ); //associate no buffer
     freopen_s( &fp, "CONOUT$", "w", stdout);
     
-    lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
-    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+    stdHandle = reinterpret_cast<intptr_t>(GetStdHandle(STD_ERROR_HANDLE));
+    hConHandle = _open_osfhandle(stdHandle, _O_TEXT);
     fp = _fdopen( hConHandle, "w" );
     *stderr = *fp;
     //setvbuf( stdout, NULL, _IONBF, 0 ); //associate no buffer
