@@ -5,8 +5,8 @@ that don't adhere to some other category of
 functions.
 */
 
-//NOTE: Make sure to keep functions in this file functional. Because after all the name of this file 
-//is "functions" so it better be god damned functional. Right?
+//NOTE: Make sure to keep functions in this file functional. Because, after all, the name of this file 
+//is "*Functions.cpp", so it ought to be functional. Right?
 
 //this is pretty functional. Just takes in a list and an Id and returns something
 INLINE pokemon_move FillPokemonMove(pokemon_move *MoveDatabase, unsigned int MoveID)

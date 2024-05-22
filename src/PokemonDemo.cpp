@@ -186,7 +186,7 @@ internal void SaveGame(debug_platform_write_entire_file *WriteEntireFile, game_s
 {
     save_game SaveGame = {}; 
     
-    // TODO(Noah): Fix this bullshit, fam.
+    // TODO(Noah): Fix this.
     //SaveGame.Player = *GameState->Player;
     //SaveGame.PlayerEntity = *GameState->Player; //derefence the entity to save
     
@@ -198,7 +198,7 @@ internal void LoadSaveGame(debug_platform_read_entire_file *ReadEntireFile, game
     save_game SaveGame = {};
     LoadRawFile(ReadEntireFile, FileName, &SaveGame);
     
-    // TODO(Noah): Also fix this bullshit here, please.
+    // TODO(Noah): Also fix this, please.
     //GameState->Player.MoveDirection = SaveGame.PlayerEntity.MoveDirection;
     //Assert(GameState->Player.Entity); //just in case we assert here!
     //*GameState->Player.Entity = SaveGame.PlayerEntity; //we assume we already have the entity pointer set. 
@@ -303,7 +303,7 @@ internal void BlackOut(void *Data, unsigned int Param)
     GameState->Player->Entity->TileMapPos.X = 0.7f;
     GameState->Player->Entity->TileMapPos.Y = 0.7f;
     GameState->Player->MoveDirection = UP;
-    
+
     // Move the camera with the player
     GameState->CameraPos.X = 0;
     GameState->CameraPos.Y = 0;
@@ -414,7 +414,8 @@ GAME_UPDATE_RENDER(GameUpdateRender)
                 CloneString("Hi! I'm player two. Connect a controller to move me around!", npc->Entity->Message, 256); 
                 
                 npc->Entity->TileMapPos.AbsTileX = 17; npc->Entity->TileMapPos.X = 0.7f;
-                npc->Entity->TileMapPos.AbsTileY = 5; npc->Entity->TileMapPos.Y = 0.7f;
+                npc->Entity->tileMapPos.AbsTileX = 5;
+                nps->Entity->TileMapPos.Y = 0.7f;
             }
             
             // Make the primary player
@@ -434,7 +435,7 @@ GAME_UPDATE_RENDER(GameUpdateRender)
             }
             
             
-            //create mom lmao
+            //create mom.
             {
                 entity_npc *mom_npc = CreateNPC(GameState);
                 

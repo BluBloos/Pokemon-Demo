@@ -122,7 +122,7 @@ internal win32_window_dimension Win32GetWindowDimension(HWND window)
 internal void Win32ResizeDIBSection(win32_offscreen_buffer *buffer,int width, int height)
 {
 	//NOTE(Noah): we can do this since we know that bitmapMemory
-	//is initialized to zero since it's static.
+	//is initialized to zero since it's a global variable.
 	if(buffer->memory) 
 	{
 		VirtualFree(buffer->memory,0,MEM_RELEASE);
@@ -141,7 +141,7 @@ internal void Win32ResizeDIBSection(win32_offscreen_buffer *buffer,int width, in
 	buffer->bytesPerPixel = 4;
 	int bitmapMemorySize = width * height * buffer->bytesPerPixel;
 	buffer->memory = VirtualAlloc(0,bitmapMemorySize,MEM_COMMIT,PAGE_READWRITE);
-	//NOTE(Noah): setting pitch shit, ahah.
+	//NOTE(Noah): setting pitch.
 	buffer->pitch = width*buffer->bytesPerPixel;
 	//TODD(Noah): probrably want to clear to black each time we resize the window.
 }

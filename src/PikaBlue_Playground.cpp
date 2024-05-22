@@ -452,7 +452,7 @@ internal void UpdatePokemonUI(game_offscreen_buffer *buffer, game_state *GameSta
 	BlitStringBoundless(buffer, GameState->PokemonDemoFont, LevelMinX, LevelMinY, LevelBuffer, 1);
 }
 
-//THis function needs to be reconsidered because surely there is a better way to program than to just write out fucking constants.
+//THis function needs to be reconsidered because surely there is a better way to program than to just write out constants.
 internal void UpdatePokemonUI2(game_offscreen_buffer *buffer, game_state *GameState, battle_pokemon *Pokemon, float MinX, float MaxX, float MinY, float MaxY)
 {
 	pokemon_database_data PokemonData = GetPokemonDataFromID(GameState->PokemonDatabase, Pokemon->Pokemon->PokemonID);

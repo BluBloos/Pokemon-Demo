@@ -168,7 +168,7 @@ internal loaded_asset InitializeAsset(memory_arena *WorldArena, unsigned int Ass
 	return NewAsset; 
 }
 
-//this function will take an asset, some data, the data length, and pump that shit to an asset file.
+//this function will take an asset, some data, the data length, and pump it to an asset file.
 internal loaded_asset PumpAssetUnchecked(loaded_asset Asset, unsigned char *Data, unsigned int ChunkSize)
 {
 	asset_header AssetHeader = {};

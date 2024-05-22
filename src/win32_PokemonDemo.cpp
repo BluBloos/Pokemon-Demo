@@ -1042,8 +1042,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 						OutputDebugStringA("Controller is very much so plugged in!\n");
 						//NOTE(Noah): Controller is plugged in
 						//TODO(Noah): check if controllerState.dwPacketNumber increment too rapidly
-						//then I guess we can kind determine if we are not pulling fast enough
-						//it will be ratehr unfortunate if we are not pulling fast enough lmao
+						//then I guess we can determine if we are not pulling fast enough
 						XINPUT_GAMEPAD *pad = &controllerState.Gamepad;
 						bool dpad_up = (pad->wButtons & XINPUT_GAMEPAD_DPAD_UP);
 						bool dpad_down = (pad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
@@ -1253,7 +1252,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 				
 				float MilliSecondsPerFrame = (1000.0f * Win32GetSecondsElapsed(LastCounter, EndCounter, PerfCountFrequency64));
 				
-				//TODO(Noah): Kill this fucking shit. Never ship this code.
+				//TODO(Noah): Kill this. Never ship this code.
 				char Buffer[256];
 				wsprintf(Buffer, "%dms \n", (int)MilliSecondsPerFrame);
 				OutputDebugStringA(Buffer);

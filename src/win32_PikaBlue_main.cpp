@@ -216,7 +216,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 			GlobalRunning = true;
 			LARGE_INTEGER LastCounter = Win32GetWallClock();
             
-			//main loop below, shit is sacred
+			// main loop below. this is the sacred stuff.
 			while(GlobalRunning)
 			{
 				//Here we are clearing the half transition counts of the keyboard each frame to ensure that they are actually acurate.
@@ -302,7 +302,7 @@ int CALLBACK WinMain(HINSTANCE Instance,
 				}
 				else
 				{
-					//TODO(Noah): Logging, WE MISSED THE FRAME RATE! THATS BAD SHIT BOY! Maybe we should assert? lmao.
+					//TODO(Noah): Logging, WE MISSED THE FRAME RATE! THATS BAD! Maybe we should assert?
 				}
                 
 				*OldInput = *NewInput; //clone the value at new input to be the value at oldinput
