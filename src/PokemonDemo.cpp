@@ -406,16 +406,15 @@ GAME_UPDATE_RENDER(GameUpdateRender)
             
             // NOTE: In later code player 2 is the first entity in the array. This is odd, sure, but it is simply the state of things, so deal with it.
             // create player two
-            { 
+            {
                 entity_npc *npc = CreateNPC(GameState);
                 
                 npc->Entity->AnimationPlayer = LoadNPC(&GameState->WorldArena, &GameState->SpriteMap, 1, 4);
                 
                 CloneString("Hi! I'm player two. Connect a controller to move me around!", npc->Entity->Message, 256); 
                 
-                npc->Entity->TileMapPos.AbsTileX = 17; npc->Entity->TileMapPos.X = 0.7f;
-                npc->Entity->tileMapPos.AbsTileX = 5;
-                nps->Entity->TileMapPos.Y = 0.7f;
+                npc->Entity->TileMapPos.AbsTileX = 25; npc->Entity->TileMapPos.X = 0.7f;
+                npc->Entity->TileMapPos.AbsTileY = 8;
             }
             
             // Make the primary player
